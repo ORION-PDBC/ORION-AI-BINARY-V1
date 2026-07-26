@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ORION AI</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">O</div>
+
+            <div>
+                <h1>ORION AI</h1>
+                <span>Sistema de análise de mercado</span>
+            </div>
+        </div>
+
+        <div class="status">
+            <span class="status-dot"></span>
+            Sistema online
+        </div>
+    </header>
+
+
+    <main class="dashboard">
+
+        <section class="hero">
+            <div>
+                <span class="eyebrow">INTELIGÊNCIA DE MERCADO</span>
+
+                <h2>
+                    Análise inteligente para
+                    <strong>decisões de mercado.</strong>
+                </h2>
+
+                <p>
+                    Monitore ativos, acompanhe indicadores e receba
+                    sinais de análise através do ORION AI.
+                </p>
+            </div>
+
+            <div class="hero-symbol">
+                ORION
+            </div>
+        </section>
+
+
+        <section class="search-panel">
+
+            <div class="field">
+                <label for="asset">Ativo</label>
+
+                <input
+                    id="asset"
+                    type="text"
+                    placeholder="Ex.: BTC, PETR4, VALE3..."
+                >
+            </div>
+
+            <button id="analyzeButton">
+                ANALISAR ATIVO
+            </button>
+
+        </section>
+
+
+        <section class="cards">
+
+            <div class="card">
+                <span class="card-label">ATIVO</span>
+                <strong id="assetName">---</strong>
+                <small>Aguardando análise</small>
+            </div>
+
+            <div class="card">
+                <span class="card-label">PREÇO</span>
+                <strong id="assetPrice">R$ --</strong>
+                <small>Valor de referência</small>
+            </div>
+
+            <div class="card">
+                <span class="card-label">VARIAÇÃO</span>
+                <strong id="assetVariation">--%</strong>
+                <small>Última análise</small>
+            </div>
+
+            <div class="card signal-card">
+                <span class="card-label">SINAL ORION</span>
+                <strong id="signal">AGUARDANDO</strong>
+                <small id="signalDescription">
+                    Execute uma análise
+                </small>
+            </div>
+
+        </section>
+
+
+        <section class="analysis-grid">
+
+            <div class="panel chart-panel">
+
+                <div class="panel-header">
+                    <div>
+                        <span class="panel-label">MERCADO</span>
+                        <h3>Gráfico de análise</h3>
+                    </div>
+
+                    <span class="live-badge">LIVE</span>
+                </div>
+
+                <div class="chart-area">
+
+                    <div class="chart-line">
+                        <span></span>
+                    </div>
+
+                    <div class="chart-message">
+                        <div>ORION</div>
+                        <p>
+                            O gráfico será alimentado pelos dados
+                            de mercado quando a integração estiver ativa.
+                        </p>
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="panel-header">
+                    <div>
+                        <span class="panel-label">INTELIGÊNCIA</span>
+                        <h3>Indicadores</h3>
+                    </div>
+                </div>
+
+                <div class="indicator">
+                    <span>Força do mercado</span>
+                    <strong id="marketStrength">--</strong>
+                </div>
+
+                <div class="indicator">
+                    <span>Tendência</span>
+                    <strong id="trend">--</strong>
+                </div>
+
+                <div class="indicator">
+                    <span>Momentum</span>
+                    <strong id="momentum">--</strong>
+                </div>
+
+                <div class="indicator">
+                    <span>Confiança</span>
+                    <strong id="confidence">--%</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="panel explanation">
+
+            <div class="panel-header">
+                <div>
+                    <span class="panel-label">ORION AI</span>
+                    <h3>Resumo da análise</h3>
+                </div>
+            </div>
+
+            <p id="analysisText">
+                O ORION está pronto para analisar um ativo.
+                Informe o código acima para iniciar.
+            </p>
+
+        </section>
+
+    </main>
+
+
+    <footer>
+        <span>ORION AI — Sistema de análise de mercado</span>
+        <span>v1.0</span>
+    </footer>
+
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+
+</body>
+</html>
