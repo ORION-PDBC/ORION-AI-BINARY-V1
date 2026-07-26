@@ -540,7 +540,9 @@
 
                 return {
                     time: Math.floor(
-                        Number(candle.date) / 1000
+    Number(candle.date) > 10000000000
+        ? Number(candle.date) / 1000
+        : Number(candle.date)
                     ),
 
                     open: Number(candle.open),
