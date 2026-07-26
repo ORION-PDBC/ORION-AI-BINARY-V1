@@ -217,15 +217,16 @@
 
         .chart-container {
             width: 100%;
-            height: 500px;
+            height: 520px;
             background: #071522;
             border: 1px solid #193653;
             border-radius: 14px;
-            padding: 10px;
             overflow: hidden;
+            position: relative;
+            touch-action: none;
         }
 
-        #candlestickChart {
+        #chart {
             width: 100%;
             height: 100%;
         }
@@ -233,6 +234,12 @@
         .chart-info {
             margin-top: 12px;
             color: #7892aa;
+            font-size: 13px;
+        }
+
+        .chart-help {
+            margin-top: 8px;
+            color: #9db2c7;
             font-size: 13px;
         }
 
@@ -247,7 +254,7 @@
             }
 
             .chart-container {
-                height: 400px;
+                height: 430px;
             }
         }
     </style>
@@ -312,7 +319,6 @@
             <span class="card-label">Conexão</span>
             <strong id="connectionStatus">Online</strong>
         </div>
-
     </section>
 
 
@@ -367,10 +373,6 @@
     </section>
 
 
-    <!-- ==============================
-         GRÁFICO DE VELAS M5
-         ============================== -->
-
     <section class="chart-section">
 
         <div class="market-title">
@@ -378,11 +380,15 @@
         </div>
 
         <div class="chart-container">
-            <canvas id="candlestickChart"></canvas>
+            <div id="chart"></div>
         </div>
 
         <div class="chart-info" id="chartInfo">
             Aguardando dados históricos...
+        </div>
+
+        <div class="chart-help">
+            Arraste o gráfico para navegar • Use a roda do mouse para zoom • Passe o mouse sobre uma vela para consultar os valores
         </div>
 
     </section>
@@ -390,30 +396,62 @@
 </div>
 
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+
 
 <script>
-    const assetInput = document.getElementById("asset");
-    const analyzeButton = document.getElementById("analyzeButton");
 
-    const result = document.getElementById("result");
-    const assetName = document.getElementById("assetName");
-    const analysisStatus = document.getElementById("analysisStatus");
-    const connectionStatus = document.getElementById("connectionStatus");
-    const status = document.getElementById("status");
+    const assetInput =
+        document.getElementById("asset");
 
-    const price = document.getElementById("price");
-    const change = document.getElementById("change");
-    const high = document.getElementById("high");
-    const low = document.getElementById("low");
-    const volume = document.getElementById("volume");
-    const company = document.getElementById("company");
+    const analyzeButton =
+        document.getElementById("analyzeButton");
 
-    const historyStatus = document.getElementById("historyStatus");
-    const diagnostic = document.getElementById("diagnostic");
-    const chartInfo = document.getElementById("chartInfo");
+    const result =
+        document.getElementById("result");
 
-    let candlestickChart = null;
+    const assetName =
+        document.getElementById("assetName");
+
+    const analysisStatus =
+        document.getElementById("analysisStatus");
+
+    const connectionStatus =
+        document.getElementById("connectionStatus");
+
+    const status =
+        document.getElementById("status");
+
+    const price =
+        document.getElementById("price");
+
+    const change =
+        document.getElementById("change");
+
+    const high =
+        document.getElementById("high");
+
+    const low =
+        document.getElementById("low");
+
+    const volume =
+        document.getElementById("volume");
+
+    const company =
+        document.getElementById("company");
+
+    const historyStatus =
+        document.getElementById("historyStatus");
+
+    const diagnostic =
+        document.getElementById("diagnostic");
+
+    const chartInfo =
+        document.getElementById("chartInfo");
+
+
+    let chart = null;
+    let candleSeries = null;
 
 
     function formatarNumero(valor) {
@@ -446,7 +484,9 @@
             return "—";
         }
 
-        return Number(valor).toLocaleString("pt-BR");
+        return Number(valor).toLocaleString(
+            "pt-BR"
+        );
     }
 
 
@@ -472,18 +512,7 @@
     }
 
 
-    function destruirGrafico() {
-
-        if (candlestickChart) {
-            candlestickChart.destroy();
-            candlestickChart = null;
-        }
-    }
-
-
     function criarGraficoM5(historico) {
-
-        destruirGrafico();
 
         if (
             !historico ||
@@ -498,295 +527,204 @@
         }
 
 
-        const canvas =
-            document.getElementById("candlestickChart");
-
-        const contexto =
-            canvas.getContext("2d");
-
-
-        /*
-         * A Brapi fornece os dados OHLC.
-         * Nesta primeira versão vamos desenhar
-         * as velas diretamente no Canvas.
-         */
-
-        const candles = historico
+        const dados = historico
             .filter(candle =>
                 candle &&
                 candle.open !== undefined &&
                 candle.high !== undefined &&
                 candle.low !== undefined &&
-                candle.close !== undefined
+                candle.close !== undefined &&
+                candle.date !== undefined
             )
-            .slice(-100);
+            .map(candle => {
+
+                return {
+                    time: Math.floor(
+                        Number(candle.date) / 1000
+                    ),
+
+                    open: Number(candle.open),
+                    high: Number(candle.high),
+                    low: Number(candle.low),
+                    close: Number(candle.close)
+                };
+
+            })
+            .filter(candle =>
+                Number.isFinite(candle.time) &&
+                Number.isFinite(candle.open) &&
+                Number.isFinite(candle.high) &&
+                Number.isFinite(candle.low) &&
+                Number.isFinite(candle.close)
+            );
 
 
-        if (candles.length === 0) {
+        if (dados.length === 0) {
 
             chartInfo.textContent =
-                "Os dados históricos foram recebidos, " +
-                "mas não possuem OHLC utilizável.";
+                "Os candles foram recebidos, " +
+                "mas não possuem dados OHLC/tempo utilizáveis.";
 
             return;
         }
 
 
-        const largura =
-            canvas.clientWidth;
-
-        const altura =
-            canvas.clientHeight;
-
-
-        const devicePixelRatio =
-            window.devicePixelRatio || 1;
-
-
-        canvas.width =
-            largura * devicePixelRatio;
-
-        canvas.height =
-            altura * devicePixelRatio;
-
-
-        contexto.scale(
-            devicePixelRatio,
-            devicePixelRatio
+        dados.sort(
+            (a, b) => a.time - b.time
         );
 
 
-        contexto.clearRect(
-            0,
-            0,
-            largura,
-            altura
-        );
+        /*
+         * Remove timestamps duplicados.
+         * O Lightweight Charts exige tempos únicos.
+         */
 
+        const dadosUnicos = [];
 
-        const valores = [];
+        const tempos = new Set();
 
-        candles.forEach(candle => {
+        dados.forEach(candle => {
 
-            valores.push(
-                Number(candle.high)
-            );
+            if (!tempos.has(candle.time)) {
 
-            valores.push(
-                Number(candle.low)
-            );
+                tempos.add(candle.time);
 
-        });
+                dadosUnicos.push(candle);
 
-
-        const maiorValor =
-            Math.max(...valores);
-
-        const menorValor =
-            Math.min(...valores);
-
-
-        const margemSuperior = 25;
-        const margemInferior = 35;
-        const margemEsquerda = 50;
-        const margemDireita = 20;
-
-
-        const areaLargura =
-            largura -
-            margemEsquerda -
-            margemDireita;
-
-
-        const areaAltura =
-            altura -
-            margemSuperior -
-            margemInferior;
-
-
-        const diferenca =
-            maiorValor - menorValor;
-
-
-        function converterY(valor) {
-
-            if (diferenca === 0) {
-                return margemSuperior +
-                    areaAltura / 2;
             }
 
-            return margemSuperior +
-                (
-                    (maiorValor - valor) /
-                    diferenca
-                ) *
-                areaAltura;
-        }
-
-
-        // Linhas horizontais de referência
-
-        contexto.strokeStyle = "#193653";
-        contexto.lineWidth = 1;
-
-        for (let i = 0; i <= 5; i++) {
-
-            const y =
-                margemSuperior +
-                (areaAltura / 5) * i;
-
-            contexto.beginPath();
-
-            contexto.moveTo(
-                margemEsquerda,
-                y
-            );
-
-            contexto.lineTo(
-                largura - margemDireita,
-                y
-            );
-
-            contexto.stroke();
-
-
-            const valorLinha =
-                maiorValor -
-                (diferenca / 5) * i;
-
-
-            contexto.fillStyle =
-                "#7892aa";
-
-            contexto.font =
-                "11px Arial";
-
-            contexto.fillText(
-                formatarNumero(valorLinha),
-                5,
-                y + 4
-            );
-        }
-
-
-        const larguraCandle =
-            areaLargura /
-            candles.length;
-
-
-        candles.forEach((candle, indice) => {
-
-            const open =
-                Number(candle.open);
-
-            const high =
-                Number(candle.high);
-
-            const low =
-                Number(candle.low);
-
-            const close =
-                Number(candle.close);
-
-
-            const xCentro =
-                margemEsquerda +
-                larguraCandle * indice +
-                larguraCandle / 2;
-
-
-            const yOpen =
-                converterY(open);
-
-            const yHigh =
-                converterY(high);
-
-            const yLow =
-                converterY(low);
-
-            const yClose =
-                converterY(close);
-
-
-            const larguraCorpo =
-                Math.max(
-                    2,
-                    larguraCandle * 0.6
-                );
-
-
-            const corpoTopo =
-                Math.min(
-                    yOpen,
-                    yClose
-                );
-
-
-            const corpoBaixo =
-                Math.max(
-                    yOpen,
-                    yClose
-                );
-
-
-            const alta =
-                close >= open;
-
-
-            /*
-             * Pavio
-             */
-
-            contexto.strokeStyle =
-                alta
-                    ? "#55e6a5"
-                    : "#ff7b7b";
-
-            contexto.lineWidth = 1;
-
-            contexto.beginPath();
-
-            contexto.moveTo(
-                xCentro,
-                yHigh
-            );
-
-            contexto.lineTo(
-                xCentro,
-                yLow
-            );
-
-            contexto.stroke();
-
-
-            /*
-             * Corpo
-             */
-
-            contexto.fillStyle =
-                alta
-                    ? "#55e6a5"
-                    : "#ff7b7b";
-
-            contexto.fillRect(
-                xCentro -
-                    larguraCorpo / 2,
-                corpoTopo,
-                larguraCorpo,
-                Math.max(
-                    1,
-                    corpoBaixo -
-                    corpoTopo
-                )
-            );
-
         });
+
+
+        if (!chart) {
+
+            chart =
+                LightweightCharts.createChart(
+                    document.getElementById("chart"),
+                    {
+                        width:
+                            document.getElementById("chart").clientWidth,
+
+                        height:
+                            document.getElementById("chart").clientHeight,
+
+                        layout: {
+                            background: {
+                                color: "#071522"
+                            },
+
+                            textColor: "#9db2c7"
+                        },
+
+                        grid: {
+                            vertLines: {
+                                color: "#10283d"
+                            },
+
+                            horzLines: {
+                                color: "#10283d"
+                            }
+                        },
+
+                        crosshair: {
+                            mode:
+                                LightweightCharts.CrosshairMode.Normal
+                        },
+
+                        rightPriceScale: {
+                            borderColor: "#193653"
+                        },
+
+                        timeScale: {
+                            borderColor: "#193653",
+
+                            timeVisible: true,
+
+                            secondsVisible: false,
+
+                            rightOffset: 5,
+
+                            barSpacing: 8,
+
+                            minBarSpacing: 2
+                        },
+
+                        localization: {
+                            priceFormatter:
+                                function(valor) {
+
+                                    return Number(
+                                        valor
+                                    ).toLocaleString(
+                                        "pt-BR",
+                                        {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        }
+                                    );
+
+                                }
+                        }
+                    }
+                );
+
+
+            candleSeries =
+                chart.addCandlestickSeries({
+                    upColor: "#55e6a5",
+
+                    downColor: "#ff7b7b",
+
+                    borderVisible: false,
+
+                    wickUpColor: "#55e6a5",
+
+                    wickDownColor: "#ff7b7b"
+                });
+
+
+            /*
+             * Redimensiona o gráfico quando
+             * a janela do navegador mudar.
+             */
+
+            window.addEventListener(
+                "resize",
+                function() {
+
+                    if (!chart) {
+                        return;
+                    }
+
+                    const elemento =
+                        document.getElementById("chart");
+
+                    chart.resize(
+                        elemento.clientWidth,
+                        elemento.clientHeight
+                    );
+
+                }
+            );
+
+        }
+
+
+        candleSeries.setData(
+            dadosUnicos
+        );
+
+
+        /*
+         * Mostra inicialmente todo o histórico.
+         */
+
+        chart.timeScale().fitContent();
 
 
         chartInfo.textContent =
-            `Exibindo os últimos ` +
-            `${candles.length} candles M5 ` +
-            `recebidos pela Brapi.`;
+            `Exibindo ${dadosUnicos.length} candles M5. ` +
+            `Arraste para navegar e use a roda do mouse para zoom.`;
 
     }
 
@@ -825,11 +763,14 @@
         assetName.textContent =
             ativo.toUpperCase();
 
+
         analysisStatus.textContent =
             "Analisando";
 
+
         connectionStatus.textContent =
             "Conectando";
+
 
         status.textContent =
             "● ORION AI — enviando análise";
@@ -966,8 +907,6 @@
             }
 
 
-            // Diagnóstico
-
             if (
                 data.status_historico !== undefined
             ) {
@@ -994,8 +933,6 @@
 
             }
 
-
-            // Criar gráfico
 
             criarGraficoM5(
                 data.historico
@@ -1059,19 +996,6 @@
             if (event.key === "Enter") {
                 analisarAtivo();
             }
-
-        }
-    );
-
-
-    window.addEventListener(
-        "resize",
-        function() {
-
-            /*
-             * O gráfico será redesenhado
-             * na próxima consulta do ativo.
-             */
 
         }
     );
