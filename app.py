@@ -86,7 +86,7 @@ def analisar():
 
         parametros_historico = {
             "symbols": ativo,
-            "range": "1d",
+            "range": "5d",
             "interval": "5m"
         }
 
