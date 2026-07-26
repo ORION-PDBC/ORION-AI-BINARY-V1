@@ -20,7 +20,7 @@
 
         .container {
             width: 100%;
-            max-width: 900px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 40px 20px;
         }
@@ -211,6 +211,31 @@
             color: #d9e7f2;
         }
 
+        .chart-section {
+            margin-top: 30px;
+        }
+
+        .chart-container {
+            width: 100%;
+            height: 500px;
+            background: #071522;
+            border: 1px solid #193653;
+            border-radius: 14px;
+            padding: 10px;
+            overflow: hidden;
+        }
+
+        #candlestickChart {
+            width: 100%;
+            height: 100%;
+        }
+
+        .chart-info {
+            margin-top: 12px;
+            color: #7892aa;
+            font-size: 13px;
+        }
+
         @media (max-width: 700px) {
             h1 {
                 font-size: 32px;
@@ -219,6 +244,10 @@
             .cards,
             .market-grid {
                 grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                height: 400px;
             }
         }
     </style>
@@ -337,8 +366,31 @@
 
     </section>
 
+
+    <!-- ==============================
+         GRÁFICO DE VELAS M5
+         ============================== -->
+
+    <section class="chart-section">
+
+        <div class="market-title">
+            Gráfico de Velas — M5
+        </div>
+
+        <div class="chart-container">
+            <canvas id="candlestickChart"></canvas>
+        </div>
+
+        <div class="chart-info" id="chartInfo">
+            Aguardando dados históricos...
+        </div>
+
+    </section>
+
 </div>
 
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
     const assetInput = document.getElementById("asset");
@@ -359,9 +411,13 @@
 
     const historyStatus = document.getElementById("historyStatus");
     const diagnostic = document.getElementById("diagnostic");
+    const chartInfo = document.getElementById("chartInfo");
+
+    let candlestickChart = null;
 
 
     function formatarNumero(valor) {
+
         if (
             valor === null ||
             valor === undefined ||
@@ -381,6 +437,7 @@
 
 
     function formatarVolume(valor) {
+
         if (
             valor === null ||
             valor === undefined ||
@@ -415,54 +472,409 @@
     }
 
 
+    function destruirGrafico() {
+
+        if (candlestickChart) {
+            candlestickChart.destroy();
+            candlestickChart = null;
+        }
+    }
+
+
+    function criarGraficoM5(historico) {
+
+        destruirGrafico();
+
+        if (
+            !historico ||
+            !Array.isArray(historico) ||
+            historico.length === 0
+        ) {
+
+            chartInfo.textContent =
+                "Nenhum candle M5 disponível para exibição.";
+
+            return;
+        }
+
+
+        const canvas =
+            document.getElementById("candlestickChart");
+
+        const contexto =
+            canvas.getContext("2d");
+
+
+        /*
+         * A Brapi fornece os dados OHLC.
+         * Nesta primeira versão vamos desenhar
+         * as velas diretamente no Canvas.
+         */
+
+        const candles = historico
+            .filter(candle =>
+                candle &&
+                candle.open !== undefined &&
+                candle.high !== undefined &&
+                candle.low !== undefined &&
+                candle.close !== undefined
+            )
+            .slice(-100);
+
+
+        if (candles.length === 0) {
+
+            chartInfo.textContent =
+                "Os dados históricos foram recebidos, " +
+                "mas não possuem OHLC utilizável.";
+
+            return;
+        }
+
+
+        const largura =
+            canvas.clientWidth;
+
+        const altura =
+            canvas.clientHeight;
+
+
+        const devicePixelRatio =
+            window.devicePixelRatio || 1;
+
+
+        canvas.width =
+            largura * devicePixelRatio;
+
+        canvas.height =
+            altura * devicePixelRatio;
+
+
+        contexto.scale(
+            devicePixelRatio,
+            devicePixelRatio
+        );
+
+
+        contexto.clearRect(
+            0,
+            0,
+            largura,
+            altura
+        );
+
+
+        const valores = [];
+
+        candles.forEach(candle => {
+
+            valores.push(
+                Number(candle.high)
+            );
+
+            valores.push(
+                Number(candle.low)
+            );
+
+        });
+
+
+        const maiorValor =
+            Math.max(...valores);
+
+        const menorValor =
+            Math.min(...valores);
+
+
+        const margemSuperior = 25;
+        const margemInferior = 35;
+        const margemEsquerda = 50;
+        const margemDireita = 20;
+
+
+        const areaLargura =
+            largura -
+            margemEsquerda -
+            margemDireita;
+
+
+        const areaAltura =
+            altura -
+            margemSuperior -
+            margemInferior;
+
+
+        const diferenca =
+            maiorValor - menorValor;
+
+
+        function converterY(valor) {
+
+            if (diferenca === 0) {
+                return margemSuperior +
+                    areaAltura / 2;
+            }
+
+            return margemSuperior +
+                (
+                    (maiorValor - valor) /
+                    diferenca
+                ) *
+                areaAltura;
+        }
+
+
+        // Linhas horizontais de referência
+
+        contexto.strokeStyle = "#193653";
+        contexto.lineWidth = 1;
+
+        for (let i = 0; i <= 5; i++) {
+
+            const y =
+                margemSuperior +
+                (areaAltura / 5) * i;
+
+            contexto.beginPath();
+
+            contexto.moveTo(
+                margemEsquerda,
+                y
+            );
+
+            contexto.lineTo(
+                largura - margemDireita,
+                y
+            );
+
+            contexto.stroke();
+
+
+            const valorLinha =
+                maiorValor -
+                (diferenca / 5) * i;
+
+
+            contexto.fillStyle =
+                "#7892aa";
+
+            contexto.font =
+                "11px Arial";
+
+            contexto.fillText(
+                formatarNumero(valorLinha),
+                5,
+                y + 4
+            );
+        }
+
+
+        const larguraCandle =
+            areaLargura /
+            candles.length;
+
+
+        candles.forEach((candle, indice) => {
+
+            const open =
+                Number(candle.open);
+
+            const high =
+                Number(candle.high);
+
+            const low =
+                Number(candle.low);
+
+            const close =
+                Number(candle.close);
+
+
+            const xCentro =
+                margemEsquerda +
+                larguraCandle * indice +
+                larguraCandle / 2;
+
+
+            const yOpen =
+                converterY(open);
+
+            const yHigh =
+                converterY(high);
+
+            const yLow =
+                converterY(low);
+
+            const yClose =
+                converterY(close);
+
+
+            const larguraCorpo =
+                Math.max(
+                    2,
+                    larguraCandle * 0.6
+                );
+
+
+            const corpoTopo =
+                Math.min(
+                    yOpen,
+                    yClose
+                );
+
+
+            const corpoBaixo =
+                Math.max(
+                    yOpen,
+                    yClose
+                );
+
+
+            const alta =
+                close >= open;
+
+
+            /*
+             * Pavio
+             */
+
+            contexto.strokeStyle =
+                alta
+                    ? "#55e6a5"
+                    : "#ff7b7b";
+
+            contexto.lineWidth = 1;
+
+            contexto.beginPath();
+
+            contexto.moveTo(
+                xCentro,
+                yHigh
+            );
+
+            contexto.lineTo(
+                xCentro,
+                yLow
+            );
+
+            contexto.stroke();
+
+
+            /*
+             * Corpo
+             */
+
+            contexto.fillStyle =
+                alta
+                    ? "#55e6a5"
+                    : "#ff7b7b";
+
+            contexto.fillRect(
+                xCentro -
+                    larguraCorpo / 2,
+                corpoTopo,
+                larguraCorpo,
+                Math.max(
+                    1,
+                    corpoBaixo -
+                    corpoTopo
+                )
+            );
+
+        });
+
+
+        chartInfo.textContent =
+            `Exibindo os últimos ` +
+            `${candles.length} candles M5 ` +
+            `recebidos pela Brapi.`;
+
+    }
+
+
     async function analisarAtivo() {
 
-        const ativo = assetInput.value.trim();
+        const ativo =
+            assetInput.value.trim();
+
 
         if (!ativo) {
-            result.textContent = "Digite um ativo antes de analisar.";
-            result.className = "result error";
-            analysisStatus.textContent = "Erro";
+
+            result.textContent =
+                "Digite um ativo antes de analisar.";
+
+            result.className =
+                "result error";
+
+            analysisStatus.textContent =
+                "Erro";
+
             return;
         }
 
 
         analyzeButton.disabled = true;
 
-        result.className = "result";
-        result.textContent = "Enviando ativo para o ORION AI...";
 
-        assetName.textContent = ativo.toUpperCase();
-        analysisStatus.textContent = "Analisando";
-        connectionStatus.textContent = "Conectando";
-        status.textContent = "● ORION AI — enviando análise";
+        result.className =
+            "result";
+
+        result.textContent =
+            "Enviando ativo para o ORION AI...";
+
+
+        assetName.textContent =
+            ativo.toUpperCase();
+
+        analysisStatus.textContent =
+            "Analisando";
+
+        connectionStatus.textContent =
+            "Conectando";
+
+        status.textContent =
+            "● ORION AI — enviando análise";
+
 
         historyStatus.textContent =
             "Histórico M5: consultando dados...";
+
 
         diagnostic.textContent =
             "Diagnóstico: consultando Brapi...";
 
 
+        chartInfo.textContent =
+            "Preparando gráfico M5...";
+
+
         try {
 
-            const response = await fetch("/analisar", {
-                method: "POST",
+            const response =
+                await fetch(
+                    "/analisar",
+                    {
+                        method: "POST",
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+                        headers: {
+                            "Content-Type":
+                                "application/json"
+                        },
 
-                body: JSON.stringify({
-                    ativo: ativo
-                })
-            });
+                        body: JSON.stringify({
+                            ativo: ativo
+                        })
+                    }
+                );
 
 
-            const data = await response.json();
+            const data =
+                await response.json();
 
 
-            if (!response.ok || !data.sucesso) {
+            if (
+                !response.ok ||
+                !data.sucesso
+            ) {
 
                 throw new Error(
                     data.erro ||
@@ -472,7 +884,9 @@
             }
 
 
-            result.className = "result success";
+            result.className =
+                "result success";
+
 
             result.textContent =
                 data.mensagem ||
@@ -483,11 +897,14 @@
                 data.ativo ||
                 ativo.toUpperCase();
 
+
             analysisStatus.textContent =
                 "Cotação recebida";
 
+
             connectionStatus.textContent =
                 "Online";
+
 
             status.textContent =
                 "● ORION AI — análise recebida";
@@ -522,7 +939,9 @@
 
 
             volume.textContent =
-                formatarVolume(data.volume);
+                formatarVolume(
+                    data.volume
+                );
 
 
             company.textContent =
@@ -547,11 +966,11 @@
             }
 
 
-            // ==============================
-            // DIAGNÓSTICO DA BRAPI
-            // ==============================
+            // Diagnóstico
 
-            if (data.status_historico !== undefined) {
+            if (
+                data.status_historico !== undefined
+            ) {
 
                 diagnostic.innerHTML =
                     `Status HTTP da Brapi: <strong>` +
@@ -576,34 +995,54 @@
             }
 
 
+            // Criar gráfico
+
+            criarGraficoM5(
+                data.historico
+            );
+
+
         } catch (error) {
 
-            result.className = "result error";
+            result.className =
+                "result error";
+
 
             result.textContent =
                 "Erro na comunicação com o servidor:\n\n" +
                 error.message;
 
+
             analysisStatus.textContent =
                 "Erro";
+
 
             connectionStatus.textContent =
                 "Falha";
 
+
             status.textContent =
                 "● ORION AI — erro de comunicação";
+
 
             historyStatus.textContent =
                 "Histórico M5: erro na consulta.";
 
+
             diagnostic.textContent =
                 "Diagnóstico: erro ao processar resposta.";
 
+
+            chartInfo.textContent =
+                "Não foi possível montar o gráfico.";
+
         } finally {
 
-            analyzeButton.disabled = false;
+            analyzeButton.disabled =
+                false;
 
         }
+
     }
 
 
@@ -623,6 +1062,20 @@
 
         }
     );
+
+
+    window.addEventListener(
+        "resize",
+        function() {
+
+            /*
+             * O gráfico será redesenhado
+             * na próxima consulta do ativo.
+             */
+
+        }
+    );
+
 </script>
 
 </body>
