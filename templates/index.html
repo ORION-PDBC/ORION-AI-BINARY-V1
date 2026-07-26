@@ -279,7 +279,7 @@
             const data = await response.json();
 
 
-            if (!response.ok || !data.success) {
+            if (!response.ok || !data.sucesso) {
 
                 throw new Error(
                     data.erro || "O servidor não conseguiu processar a análise."
