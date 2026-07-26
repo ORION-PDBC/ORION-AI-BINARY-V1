@@ -24,7 +24,10 @@ def analisar():
     try:
         # Cotação atual
         url_cotacao = f"https://brapi.dev/api/quote/{ativo}"
-        resposta_cotacao = requests.get(url_cotacao, timeout=10)
+        resposta_cotacao = requests.get(
+            url_cotacao,
+            timeout=10
+        )
 
         if resposta_cotacao.status_code != 200:
             return jsonify({
@@ -72,6 +75,9 @@ def analisar():
                     []
                 )
 
+        # Quantidade de candles recebidos
+        quantidade_candles = len(historico)
+
         return jsonify({
             "sucesso": True,
             "ativo": ativo,
@@ -88,6 +94,7 @@ def analisar():
             "volume": cotacao.get("regularMarketVolume"),
 
             "timeframe": "5m",
+            "quantidade_candles": quantidade_candles,
             "historico": historico
         })
 
