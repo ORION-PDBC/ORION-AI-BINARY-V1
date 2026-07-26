@@ -103,32 +103,50 @@ def analisar():
         erro_historico = None
 
 
+        # ==============================
+        # DIAGNÓSTICO DA BRAPI
+        # ==============================
+
+        status_historico = resposta_historico.status_code
+
         if resposta_historico.status_code == 200:
 
-            dados_historico = resposta_historico.json()
+            try:
+                dados_historico = resposta_historico.json()
 
-            resultados_historico = dados_historico.get(
-                "results",
-                []
-            )
-
-            if resultados_historico:
-
-                dados_ativo = resultados_historico[0].get(
-                    "data",
-                    {}
+                resultados_historico = dados_historico.get(
+                    "results",
+                    []
                 )
 
-                historico = dados_ativo.get(
-                    "historicalDataPrice",
-                    []
+                if resultados_historico:
+
+                    dados_ativo = resultados_historico[0].get(
+                        "data",
+                        {}
+                    )
+
+                    historico = dados_ativo.get(
+                        "historicalDataPrice",
+                        []
+                    )
+
+            except ValueError:
+
+                erro_historico = (
+                    "A Brapi respondeu, mas não retornou "
+                    "JSON válido."
                 )
 
         else:
 
             try:
-                erro_historico = resposta_historico.json()
-            except Exception:
+                resposta_erro = resposta_historico.json()
+
+                erro_historico = resposta_erro
+
+            except ValueError:
+
                 erro_historico = resposta_historico.text
 
 
@@ -176,6 +194,8 @@ def analisar():
             ),
 
             "timeframe": "5m",
+
+            "status_historico": status_historico,
 
             "quantidade_candles": quantidade_candles,
 
