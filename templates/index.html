@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>ORION AI</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #06111f;
+            color: #ffffff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        header {
+            padding: 20px 0 35px;
+            border-bottom: 1px solid #1b3854;
+            margin-bottom: 30px;
+        }
+
+        .status {
+            color: #55e6a5;
+            font-size: 15px;
+            margin-bottom: 15px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 42px;
+            letter-spacing: 1px;
+        }
+
+        .subtitle {
+            margin-top: 10px;
+            color: #b8c7d8;
+            font-size: 18px;
+        }
+
+        .box {
+            background: #0a1b2d;
+            border: 1px solid #1c405e;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        input {
+            width: 100%;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #245477;
+            background: #071626;
+            color: #ffffff;
+            font-size: 20px;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: #32d9a0;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 15px;
+            padding: 17px;
+            border: 0;
+            border-radius: 12px;
+            background: #20c997;
+            color: #041018;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .card {
+            background: #0a1b2d;
+            border: 1px solid #1c405e;
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .card-label {
+            display: block;
+            color: #8fa8bf;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .card strong {
+            font-size: 22px;
+        }
+
+        .card small {
+            display: block;
+            margin-top: 7px;
+            color: #8fa8bf;
+        }
+
+        #message {
+            margin-top: 15px;
+            color: #9eb4c9;
+            min-height: 22px;
+        }
+
+        @media (max-width: 600px) {
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <header>
+        <div class="status">● Sistema online</div>
+
+        <h1>ORION AI</h1>
+
+        <div class="subtitle">
+            Sistema de análise de mercado
+        </div>
+    </header>
+
+    <section class="box">
+
+        <label for="asset">Ativo</label>
+
+        <input
+            id="asset"
+            type="text"
+            placeholder="Ex.: BTC, PETR4, VALE3..."
+            autocomplete="off"
+        >
+
+        <button id="analyzeButton" type="button">
+            ANALISAR ATIVO
+        </button>
+
+        <div id="message">
+            Digite um ativo para iniciar a análise.
+        </div>
+
+    </section>
+
+    <section class="cards">
+
+        <div class="card">
+            <span class="card-label">ATIVO</span>
+            <strong id="assetName">--</strong>
+            <small>Ativo analisado</small>
+        </div>
+
+        <div class="card">
+            <span class="card-label">PREÇO</span>
+            <strong id="price">R$ --</strong>
+            <small>Valor de referência</small>
+        </div>
+
+        <div class="card">
+            <span class="card-label">VARIAÇÃO</span>
+            <strong id="variation">--%</strong>
+            <small>Última análise</small>
+        </div>
+
+        <div class="card">
+            <span class="card-label">SINAL ORION</span>
+            <strong id="signal">AGUARDANDO</strong>
+            <small id="signalDescription">
+                Execute uma análise
+            </small>
+        </div>
+
+    </section>
+
+</div>
+
+<script>
+
+    const assetInput = document.getElementById("asset");
+    const analyzeButton = document.getElementById("analyzeButton");
+
+    const assetName = document.getElementById("assetName");
+    const price = document.getElementById("price");
+    const variation = document.getElementById("variation");
+    const signal = document.getElementById("signal");
+    const signalDescription = document.getElementById("signalDescription");
+    const message = document.getElementById("message");
+
+
+    async function analisarAtivo() {
+
+        const asset = assetInput.value.trim().toUpperCase();
+
+        if (!asset) {
+            message.textContent = "Digite um ativo antes de analisar.";
+            assetInput.focus();
+            return;
+        }
+
+        analyzeButton.disabled = true;
+        analyzeButton.textContent = "ANALISANDO...";
+        message.textContent = "Enviando solicitação para o servidor...";
+
+        assetName.textContent = asset;
+        price.textContent = "R$ --";
+        variation.textContent = "--%";
+        signal.textContent = "ANALISANDO";
+        signalDescription.textContent = "Aguarde...";
+
+        try {
+
+            const response = await fetch("/analisar", {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    ativo: asset
+                })
+            });
+
+
+            const data = await response.json();
+
+
+            if (!response.ok) {
+                throw new Error(
+                    data.erro || "O servidor retornou um erro."
+                );
+            }
+
+
+            assetName.textContent =
+                data.ativo || asset;
+
+            price.textContent =
+                data.preco !== undefined
+                    ? "R$ " + data.preco
+                    : "R$ --";
+
+            variation.textContent =
+                data.variacao !== undefined
+                    ? data.variacao + "%"
+                    : "--%";
+
+            signal.textContent =
+                data.sinal || "SEM SINAL";
+
+            signalDescription.textContent =
+                data.mensagem || "Análise concluída.";
+
+            message.textContent =
+                "Análise concluída com sucesso.";
+
+        } catch (error) {
+
+            console.error(error);
+
+            signal.textContent = "ERRO";
+
+            signalDescription.textContent =
+                "Não foi possível concluir a análise.";
+
+            message.textContent =
+                "Erro de comunicação com o servidor: " +
+                error.message;
+
+        } finally {
+
+            analyzeButton.disabled = false;
+            analyzeButton.textContent = "ANALISAR ATIVO";
+
+        }
+    }
+
+
+    analyzeButton.addEventListener(
+        "click",
+        analisarAtivo
+    );
+
+
+    assetInput.addEventListener(
+        "keydown",
+        function(event) {
+
+            if (event.key === "Enter") {
+                analisarAtivo();
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
