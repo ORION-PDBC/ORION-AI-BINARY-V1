@@ -115,7 +115,6 @@
             min-height: 60px;
             color: #d9e7f2;
             white-space: pre-wrap;
-            line-height: 1.7;
         }
 
         .cards {
@@ -143,11 +142,30 @@
             font-size: 20px;
         }
 
-        .market-data {
+        .error {
+            color: #ff7b7b;
+        }
+
+        .success {
+            color: #55e6a5;
+        }
+
+        .market-section {
+            margin-top: 30px;
+        }
+
+        .market-title {
+            margin-bottom: 15px;
+            color: #9db2c7;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .market-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 15px;
-            margin-top: 20px;
         }
 
         .market-card {
@@ -166,26 +184,29 @@
         }
 
         .market-value {
-            font-size: 22px;
-            font-weight: bold;
+            font-size: 20px;
         }
 
-        .error {
-            color: #ff7b7b;
+        .history-status {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 10px;
+            background: #071522;
+            border: 1px solid #193653;
+            color: #9db2c7;
         }
 
-        .success {
+        .history-status strong {
             color: #55e6a5;
         }
 
         @media (max-width: 700px) {
-
             h1 {
                 font-size: 32px;
             }
 
             .cards,
-            .market-data {
+            .market-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -235,41 +256,6 @@
     </section>
 
 
-    <section class="market-data">
-
-        <div class="market-card">
-            <span class="market-label">Preço atual</span>
-            <strong class="market-value" id="price">—</strong>
-        </div>
-
-        <div class="market-card">
-            <span class="market-label">Variação</span>
-            <strong class="market-value" id="change">—</strong>
-        </div>
-
-        <div class="market-card">
-            <span class="market-label">Máxima do dia</span>
-            <strong class="market-value" id="high">—</strong>
-        </div>
-
-        <div class="market-card">
-            <span class="market-label">Mínima do dia</span>
-            <strong class="market-value" id="low">—</strong>
-        </div>
-
-        <div class="market-card">
-            <span class="market-label">Volume</span>
-            <strong class="market-value" id="volume">—</strong>
-        </div>
-
-        <div class="market-card">
-            <span class="market-label">Empresa</span>
-            <strong class="market-value" id="company">—</strong>
-        </div>
-
-    </section>
-
-
     <section class="cards">
 
         <div class="card">
@@ -285,6 +271,53 @@
         <div class="card">
             <span class="card-label">Conexão</span>
             <strong id="connectionStatus">Online</strong>
+        </div>
+
+    </section>
+
+
+    <section class="market-section">
+
+        <div class="market-title">
+            Dados de mercado
+        </div>
+
+        <div class="market-grid">
+
+            <div class="market-card">
+                <span class="market-label">Preço atual</span>
+                <strong class="market-value" id="price">—</strong>
+            </div>
+
+            <div class="market-card">
+                <span class="market-label">Variação</span>
+                <strong class="market-value" id="change">—</strong>
+            </div>
+
+            <div class="market-card">
+                <span class="market-label">Máxima do dia</span>
+                <strong class="market-value" id="high">—</strong>
+            </div>
+
+            <div class="market-card">
+                <span class="market-label">Mínima do dia</span>
+                <strong class="market-value" id="low">—</strong>
+            </div>
+
+            <div class="market-card">
+                <span class="market-label">Volume</span>
+                <strong class="market-value" id="volume">—</strong>
+            </div>
+
+            <div class="market-card">
+                <span class="market-label">Empresa</span>
+                <strong class="market-value" id="company">—</strong>
+            </div>
+
+        </div>
+
+        <div class="history-status" id="historyStatus">
+            Histórico M5: aguardando consulta...
         </div>
 
     </section>
@@ -309,23 +342,34 @@
     const volume = document.getElementById("volume");
     const company = document.getElementById("company");
 
+    const historyStatus = document.getElementById("historyStatus");
 
-    function formatarNumero(valor, casas = 2) {
 
-        if (valor === null || valor === undefined || valor === "") {
+    function formatarNumero(valor) {
+        if (
+            valor === null ||
+            valor === undefined ||
+            isNaN(valor)
+        ) {
             return "—";
         }
 
-        return Number(valor).toLocaleString("pt-BR", {
-            minimumFractionDigits: casas,
-            maximumFractionDigits: casas
-        });
+        return Number(valor).toLocaleString(
+            "pt-BR",
+            {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }
+        );
     }
 
 
     function formatarVolume(valor) {
-
-        if (valor === null || valor === undefined || valor === "") {
+        if (
+            valor === null ||
+            valor === undefined ||
+            isNaN(valor)
+        ) {
             return "—";
         }
 
@@ -348,12 +392,15 @@
         analyzeButton.disabled = true;
 
         result.className = "result";
-        result.textContent = "Consultando dados de mercado...";
+        result.textContent = "Enviando ativo para o ORION AI...";
 
         assetName.textContent = ativo.toUpperCase();
         analysisStatus.textContent = "Analisando";
         connectionStatus.textContent = "Conectando";
-        status.textContent = "● ORION AI — consultando mercado";
+        status.textContent = "● ORION AI — enviando análise";
+
+        historyStatus.textContent =
+            "Histórico M5: consultando dados...";
 
 
         try {
@@ -377,7 +424,8 @@
             if (!response.ok || !data.sucesso) {
 
                 throw new Error(
-                    data.erro || "O servidor não conseguiu processar a análise."
+                    data.erro ||
+                    "O servidor não conseguiu processar a análise."
                 );
 
             }
@@ -386,11 +434,13 @@
             result.className = "result success";
 
             result.textContent =
-                `Dados de ${data.ativo} recebidos com sucesso.`;
+                data.mensagem ||
+                `Ativo ${data.ativo} recebido para análise.`;
 
 
             assetName.textContent =
-                data.ativo || ativo.toUpperCase();
+                data.ativo ||
+                ativo.toUpperCase();
 
             analysisStatus.textContent =
                 "Cotação recebida";
@@ -399,11 +449,12 @@
                 "Online";
 
             status.textContent =
-                "● ORION AI — dados de mercado recebidos";
+                "● ORION AI — análise recebida";
 
 
             price.textContent =
-                data.preco !== null && data.preco !== undefined
+                data.preco !== null &&
+                data.preco !== undefined
                     ? `R$ ${formatarNumero(data.preco)}`
                     : "—";
 
@@ -437,6 +488,24 @@
                 data.nome || "—";
 
 
+            if (
+                data.timeframe === "5m" &&
+                data.quantidade_candles !== undefined
+            ) {
+
+                historyStatus.innerHTML =
+                    `Histórico M5: <strong>` +
+                    `${data.quantidade_candles}` +
+                    ` candles recebidos</strong>.`;
+
+            } else {
+
+                historyStatus.textContent =
+                    "Histórico M5: nenhum dado informado.";
+
+            }
+
+
         } catch (error) {
 
             result.className = "result error";
@@ -453,6 +522,9 @@
 
             status.textContent =
                 "● ORION AI — erro de comunicação";
+
+            historyStatus.textContent =
+                "Histórico M5: erro na consulta.";
 
         } finally {
 
