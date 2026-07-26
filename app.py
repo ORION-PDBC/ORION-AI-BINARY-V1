@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import requests
+import os
 
 app = Flask(__name__)
 
@@ -22,6 +23,24 @@ def analisar():
         }), 400
 
     try:
+        # ==============================
+        # TOKEN DA BRAPI
+        # ==============================
+
+        token = os.environ.get("BRAPI_TOKEN")
+
+        if not token:
+            return jsonify({
+                "sucesso": False,
+                "ativo": ativo,
+                "erro": "BRAPI_TOKEN não está configurado no servidor."
+            }), 500
+
+        headers = {
+            "Authorization": f"Bearer {token}"
+        }
+
+
         # ==============================
         # COTAÇÃO ATUAL
         # ==============================
@@ -74,6 +93,7 @@ def analisar():
         resposta_historico = requests.get(
             url_historico,
             params=parametros_historico,
+            headers=headers,
             timeout=10
         )
 
@@ -109,9 +129,7 @@ def analisar():
             try:
                 erro_historico = resposta_historico.json()
             except Exception:
-                erro_historico = (
-                    resposta_historico.text
-                )
+                erro_historico = resposta_historico.text
 
 
         quantidade_candles = len(historico)
