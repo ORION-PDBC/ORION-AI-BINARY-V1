@@ -115,6 +115,7 @@
             min-height: 60px;
             color: #d9e7f2;
             white-space: pre-wrap;
+            line-height: 1.7;
         }
 
         .cards {
@@ -142,6 +143,33 @@
             font-size: 20px;
         }
 
+        .market-data {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .market-card {
+            background: #0b1b2d;
+            border: 1px solid #193653;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .market-label {
+            display: block;
+            color: #7892aa;
+            font-size: 12px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .market-value {
+            font-size: 22px;
+            font-weight: bold;
+        }
+
         .error {
             color: #ff7b7b;
         }
@@ -151,11 +179,13 @@
         }
 
         @media (max-width: 700px) {
+
             h1 {
                 font-size: 32px;
             }
 
-            .cards {
+            .cards,
+            .market-data {
                 grid-template-columns: 1fr;
             }
         }
@@ -205,6 +235,41 @@
     </section>
 
 
+    <section class="market-data">
+
+        <div class="market-card">
+            <span class="market-label">Preço atual</span>
+            <strong class="market-value" id="price">—</strong>
+        </div>
+
+        <div class="market-card">
+            <span class="market-label">Variação</span>
+            <strong class="market-value" id="change">—</strong>
+        </div>
+
+        <div class="market-card">
+            <span class="market-label">Máxima do dia</span>
+            <strong class="market-value" id="high">—</strong>
+        </div>
+
+        <div class="market-card">
+            <span class="market-label">Mínima do dia</span>
+            <strong class="market-value" id="low">—</strong>
+        </div>
+
+        <div class="market-card">
+            <span class="market-label">Volume</span>
+            <strong class="market-value" id="volume">—</strong>
+        </div>
+
+        <div class="market-card">
+            <span class="market-label">Empresa</span>
+            <strong class="market-value" id="company">—</strong>
+        </div>
+
+    </section>
+
+
     <section class="cards">
 
         <div class="card">
@@ -237,6 +302,36 @@
     const connectionStatus = document.getElementById("connectionStatus");
     const status = document.getElementById("status");
 
+    const price = document.getElementById("price");
+    const change = document.getElementById("change");
+    const high = document.getElementById("high");
+    const low = document.getElementById("low");
+    const volume = document.getElementById("volume");
+    const company = document.getElementById("company");
+
+
+    function formatarNumero(valor, casas = 2) {
+
+        if (valor === null || valor === undefined || valor === "") {
+            return "—";
+        }
+
+        return Number(valor).toLocaleString("pt-BR", {
+            minimumFractionDigits: casas,
+            maximumFractionDigits: casas
+        });
+    }
+
+
+    function formatarVolume(valor) {
+
+        if (valor === null || valor === undefined || valor === "") {
+            return "—";
+        }
+
+        return Number(valor).toLocaleString("pt-BR");
+    }
+
 
     async function analisarAtivo() {
 
@@ -253,12 +348,12 @@
         analyzeButton.disabled = true;
 
         result.className = "result";
-        result.textContent = "Enviando ativo para o ORION AI...";
+        result.textContent = "Consultando dados de mercado...";
 
         assetName.textContent = ativo.toUpperCase();
         analysisStatus.textContent = "Analisando";
         connectionStatus.textContent = "Conectando";
-        status.textContent = "● ORION AI — enviando análise";
+        status.textContent = "● ORION AI — consultando mercado";
 
 
         try {
@@ -291,17 +386,55 @@
             result.className = "result success";
 
             result.textContent =
-                data.mensagem ||
-                `Ativo ${data.ativo} recebido para análise.`;
+                `Dados de ${data.ativo} recebidos com sucesso.`;
 
 
-            assetName.textContent = data.ativo || ativo.toUpperCase();
+            assetName.textContent =
+                data.ativo || ativo.toUpperCase();
 
-            analysisStatus.textContent = "Recebido";
+            analysisStatus.textContent =
+                "Cotação recebida";
 
-            connectionStatus.textContent = "Online";
+            connectionStatus.textContent =
+                "Online";
 
-            status.textContent = "● ORION AI — análise recebida";
+            status.textContent =
+                "● ORION AI — dados de mercado recebidos";
+
+
+            price.textContent =
+                data.preco !== null && data.preco !== undefined
+                    ? `R$ ${formatarNumero(data.preco)}`
+                    : "—";
+
+
+            change.textContent =
+                data.variacao_percentual !== null &&
+                data.variacao_percentual !== undefined
+                    ? `${formatarNumero(data.variacao_percentual)}%`
+                    : "—";
+
+
+            high.textContent =
+                data.maxima !== null &&
+                data.maxima !== undefined
+                    ? `R$ ${formatarNumero(data.maxima)}`
+                    : "—";
+
+
+            low.textContent =
+                data.minima !== null &&
+                data.minima !== undefined
+                    ? `R$ ${formatarNumero(data.minima)}`
+                    : "—";
+
+
+            volume.textContent =
+                formatarVolume(data.volume);
+
+
+            company.textContent =
+                data.nome || "—";
 
 
         } catch (error) {
@@ -312,11 +445,14 @@
                 "Erro na comunicação com o servidor:\n\n" +
                 error.message;
 
-            analysisStatus.textContent = "Erro";
+            analysisStatus.textContent =
+                "Erro";
 
-            connectionStatus.textContent = "Falha";
+            connectionStatus.textContent =
+                "Falha";
 
-            status.textContent = "● ORION AI — erro de comunicação";
+            status.textContent =
+                "● ORION AI — erro de comunicação";
 
         } finally {
 
