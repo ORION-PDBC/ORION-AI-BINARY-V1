@@ -194,10 +194,21 @@
             background: #071522;
             border: 1px solid #193653;
             color: #9db2c7;
+            white-space: pre-wrap;
         }
 
         .history-status strong {
             color: #55e6a5;
+        }
+
+        .diagnostic {
+            margin-top: 10px;
+            font-size: 13px;
+            color: #7892aa;
+        }
+
+        .diagnostic strong {
+            color: #d9e7f2;
         }
 
         @media (max-width: 700px) {
@@ -320,6 +331,10 @@
             Histórico M5: aguardando consulta...
         </div>
 
+        <div class="diagnostic" id="diagnostic">
+            Diagnóstico: aguardando consulta...
+        </div>
+
     </section>
 
 </div>
@@ -343,6 +358,7 @@
     const company = document.getElementById("company");
 
     const historyStatus = document.getElementById("historyStatus");
+    const diagnostic = document.getElementById("diagnostic");
 
 
     function formatarNumero(valor) {
@@ -377,6 +393,28 @@
     }
 
 
+    function formatarDiagnostico(erro) {
+
+        if (!erro) {
+            return "Nenhum erro informado pela Brapi.";
+        }
+
+        if (typeof erro === "string") {
+            return erro;
+        }
+
+        try {
+            return JSON.stringify(
+                erro,
+                null,
+                2
+            );
+        } catch {
+            return String(erro);
+        }
+    }
+
+
     async function analisarAtivo() {
 
         const ativo = assetInput.value.trim();
@@ -401,6 +439,9 @@
 
         historyStatus.textContent =
             "Histórico M5: consultando dados...";
+
+        diagnostic.textContent =
+            "Diagnóstico: consultando Brapi...";
 
 
         try {
@@ -506,6 +547,35 @@
             }
 
 
+            // ==============================
+            // DIAGNÓSTICO DA BRAPI
+            // ==============================
+
+            if (data.status_historico !== undefined) {
+
+                diagnostic.innerHTML =
+                    `Status HTTP da Brapi: <strong>` +
+                    `${data.status_historico}</strong>`;
+
+            } else {
+
+                diagnostic.textContent =
+                    "Diagnóstico: status HTTP não informado.";
+
+            }
+
+
+            if (data.erro_historico) {
+
+                diagnostic.innerHTML +=
+                    `<br>Resposta da Brapi:<br>` +
+                    `<strong>${formatarDiagnostico(
+                        data.erro_historico
+                    )}</strong>`;
+
+            }
+
+
         } catch (error) {
 
             result.className = "result error";
@@ -525,6 +595,9 @@
 
             historyStatus.textContent =
                 "Histórico M5: erro na consulta.";
+
+            diagnostic.textContent =
+                "Diagnóstico: erro ao processar resposta.";
 
         } finally {
 
