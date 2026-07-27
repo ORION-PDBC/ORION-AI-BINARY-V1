@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
 import requests
+import os
 
 app = Flask(__name__)
 
@@ -13,7 +14,9 @@ def index():
 def analisar():
     dados = request.get_json(silent=True) or {}
 
-    ativo = str(dados.get("ativo", "")).strip().upper()
+    ativo = str(
+        dados.get("ativo", "")
+    ).strip().upper()
 
     if not ativo:
         return jsonify({
@@ -22,59 +25,112 @@ def analisar():
         }), 400
 
     try:
-        # =========================
+        # ==================================================
+        # TOKEN DA BRAPI
+        # ==================================================
+
+        token = os.environ.get(
+            "BRAPI_TOKEN"
+        )
+
+        headers = {}
+
+        if token:
+            headers["Authorization"] = (
+                f"Bearer {token}"
+            )
+
+
+        # ==================================================
         # COTAÇÃO ATUAL
-        # =========================
+        # ==================================================
 
         url_cotacao = (
-            f"https://brapi.dev/api/quote/{ativo}"
+            "https://brapi.dev/api/v2/stocks/quote"
         )
 
         resposta_cotacao = requests.get(
             url_cotacao,
+            headers=headers,
+            params={
+                "symbols": ativo
+            },
             timeout=10
         )
 
+
         if resposta_cotacao.status_code != 200:
+
+            try:
+                erro_cotacao = (
+                    resposta_cotacao.json()
+                )
+            except ValueError:
+                erro_cotacao = (
+                    resposta_cotacao.text
+                )
+
             return jsonify({
                 "sucesso": False,
                 "ativo": ativo,
                 "erro": (
                     "Não foi possível obter "
-                    "os dados do ativo."
-                )
+                    "a cotação do ativo."
+                ),
+                "status_cotacao":
+                    resposta_cotacao.status_code,
+                "resposta_cotacao":
+                    erro_cotacao
             }), 502
 
-        dados_brapi = resposta_cotacao.json()
 
-        resultados = dados_brapi.get(
-            "results",
-            []
+        dados_cotacao = (
+            resposta_cotacao.json()
         )
 
-        if not resultados:
+        resultados_cotacao = (
+            dados_cotacao.get(
+                "results",
+                []
+            )
+        )
+
+
+        if not resultados_cotacao:
+
             return jsonify({
                 "sucesso": False,
                 "ativo": ativo,
                 "erro": "Ativo não encontrado."
             }), 404
 
-        cotacao = resultados[0]
+
+        cotacao = (
+            resultados_cotacao[0]
+        )
 
 
-        # =========================
-        # HISTÓRICO M5
-        # =========================
+        # ==================================================
+        # HISTÓRICO M5 — API V2
+        # ==================================================
 
         url_historico = (
-            f"https://brapi.dev/api/quote/{ativo}"
-            f"?range=1d&interval=5m"
+            "https://brapi.dev/api/v2/stocks/historical"
         )
+
 
         resposta_historico = requests.get(
             url_historico,
+            headers=headers,
+            params={
+                "symbols": ativo,
+                "range": "1d",
+                "interval": "5m",
+                "sortOrder": "asc"
+            },
             timeout=10
         )
+
 
         historico = []
 
@@ -107,31 +163,65 @@ def analisar():
 
             if resultados_historico:
 
-                campos_historico = list(
-                    resultados_historico[0].keys()
+                resultado_historico = (
+                    resultados_historico[0]
                 )
 
-                historico_brapi = (
-                    resultados_historico[0].get(
-                        "historicalDataPrice",
-                        []
+
+                campos_historico = list(
+                    resultado_historico.keys()
+                )
+
+
+                # Na API V2 os candles ficam
+                # dentro de results[0].data
+                dados_series = (
+                    resultado_historico.get(
+                        "data",
+                        {}
                     )
                 )
 
-                if historico_brapi is None:
+
+                if isinstance(
+                    dados_series,
+                    dict
+                ):
+
+                    historico_brapi = (
+                        dados_series.get(
+                            "historicalDataPrice",
+                            []
+                        )
+                    )
+
+                else:
+
                     historico_brapi = []
+
+
+                if historico_brapi is None:
+
+                    historico_brapi = []
+
 
                 quantidade_historico_brapi = len(
                     historico_brapi
                 )
 
-                if quantidade_historico_brapi > 0:
+
+                if (
+                    quantidade_historico_brapi > 0
+                ):
 
                     primeiro_item_historico = (
                         historico_brapi[0]
                     )
 
-                historico = historico_brapi
+
+                historico = (
+                    historico_brapi
+                )
 
 
         else:
@@ -149,13 +239,14 @@ def analisar():
                 )
 
 
-        # =========================
+        # ==================================================
         # DIAGNÓSTICO
-        # =========================
+        # ==================================================
 
         quantidade_candles = len(
             historico
         )
+
 
         primeiro_candle = (
             historico[0]
@@ -163,17 +254,20 @@ def analisar():
             else None
         )
 
+
         ultimo_candle = (
             historico[-1]
             if historico
             else None
         )
 
+
         primeiro_timestamp = (
             primeiro_candle.get("date")
             if primeiro_candle
             else None
         )
+
 
         ultimo_timestamp = (
             ultimo_candle.get("date")
@@ -182,9 +276,9 @@ def analisar():
         )
 
 
-        # =========================
-        # RESPOSTA
-        # =========================
+        # ==================================================
+        # RESPOSTA AO ORION
+        # ==================================================
 
         return jsonify({
 
@@ -266,6 +360,22 @@ def analisar():
             )
 
         }), 502
+
+
+    except Exception as erro:
+
+        return jsonify({
+
+            "sucesso": False,
+
+            "ativo": ativo,
+
+            "erro": (
+                f"Erro interno no servidor: "
+                f"{str(erro)}"
+            )
+
+        }), 500
 
 
 if __name__ == "__main__":
