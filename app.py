@@ -40,7 +40,6 @@ def analisar():
                 f"Bearer {token}"
             )
 
-
         # ==================================================
         # COTAÇÃO ATUAL
         # ==================================================
@@ -57,7 +56,6 @@ def analisar():
             },
             timeout=10
         )
-
 
         if resposta_cotacao.status_code != 200:
 
@@ -83,7 +81,6 @@ def analisar():
                     erro_cotacao
             }), 502
 
-
         dados_cotacao = (
             resposta_cotacao.json()
         )
@@ -95,7 +92,6 @@ def analisar():
             )
         )
 
-
         if not resultados_cotacao:
 
             return jsonify({
@@ -104,19 +100,21 @@ def analisar():
                 "erro": "Ativo não encontrado."
             }), 404
 
+        # ==================================================
+        # API V2:
+        # os dados da cotação ficam dentro de results[0].data
+        # ==================================================
 
-        cotacao = (
+        resultado_cotacao = (
             resultados_cotacao[0]
         )
 
-        # ==================================================
-        # DIAGNÓSTICO DOS CAMPOS DA COTAÇÃO
-        # ==================================================
-
-        campos_cotacao = list(
-            cotacao.keys()
+        cotacao = (
+            resultado_cotacao.get(
+                "data",
+                {}
+            )
         )
-
 
         # ==================================================
         # HISTÓRICO M5 — API V2
@@ -125,7 +123,6 @@ def analisar():
         url_historico = (
             "https://brapi.dev/api/v2/stocks/historical"
         )
-
 
         resposta_historico = requests.get(
             url_historico,
@@ -138,7 +135,6 @@ def analisar():
             },
             timeout=10
         )
-
 
         historico = []
 
@@ -154,7 +150,6 @@ def analisar():
 
         primeiro_item_historico = None
 
-
         if resposta_historico.status_code == 200:
 
             dados_historico = (
@@ -168,18 +163,15 @@ def analisar():
                 )
             )
 
-
             if resultados_historico:
 
                 resultado_historico = (
                     resultados_historico[0]
                 )
 
-
                 campos_historico = list(
                     resultado_historico.keys()
                 )
-
 
                 # Na API V2 os candles ficam
                 # dentro de results[0].data
@@ -189,7 +181,6 @@ def analisar():
                         {}
                     )
                 )
-
 
                 if isinstance(
                     dados_series,
@@ -207,16 +198,13 @@ def analisar():
 
                     historico_brapi = []
 
-
                 if historico_brapi is None:
 
                     historico_brapi = []
 
-
                 quantidade_historico_brapi = len(
                     historico_brapi
                 )
-
 
                 if (
                     quantidade_historico_brapi > 0
@@ -226,11 +214,9 @@ def analisar():
                         historico_brapi[0]
                     )
 
-
                 historico = (
                     historico_brapi
                 )
-
 
         else:
 
@@ -246,7 +232,6 @@ def analisar():
                     resposta_historico.text
                 )
 
-
         # ==================================================
         # DIAGNÓSTICO
         # ==================================================
@@ -255,13 +240,11 @@ def analisar():
             historico
         )
 
-
         primeiro_candle = (
             historico[0]
             if historico
             else None
         )
-
 
         ultimo_candle = (
             historico[-1]
@@ -269,20 +252,17 @@ def analisar():
             else None
         )
 
-
         primeiro_timestamp = (
             primeiro_candle.get("date")
             if primeiro_candle
             else None
         )
 
-
         ultimo_timestamp = (
             ultimo_candle.get("date")
             if ultimo_candle
             else None
         )
-
 
         # ==================================================
         # RESPOSTA AO ORION
@@ -295,12 +275,6 @@ def analisar():
             "ativo": ativo,
 
             "status": "cotacao_recebida",
-
-            # Diagnóstico:
-            # mostra os nomes reais dos campos
-            # devolvidos pela Brapi na cotação.
-            "campos_cotacao":
-                campos_cotacao,
 
             "nome": cotacao.get(
                 "longName"
@@ -359,7 +333,6 @@ def analisar():
                 erro_historico
         })
 
-
     except requests.RequestException as erro:
 
         return jsonify({
@@ -374,7 +347,6 @@ def analisar():
             )
 
         }), 502
-
 
     except Exception as erro:
 
