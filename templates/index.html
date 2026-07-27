@@ -193,13 +193,14 @@
 
         .diagnostic {
             margin-top: 10px;
-            padding: 12px;
+            padding: 15px;
             font-size: 13px;
             color: #7892aa;
             background: #071522;
             border-radius: 8px;
             white-space: pre-wrap;
             word-break: break-word;
+            overflow-x: auto;
         }
 
         .diagnostic strong {
@@ -1032,7 +1033,9 @@ async function analisarAtivo() {
         price.textContent =
             data.preco !== null &&
             data.preco !== undefined
-                ? `R$ ${formatarNumero(data.preco)}`
+                ? `R$ ${formatarNumero(
+                    data.preco
+                )}`
                 : "—";
 
 
@@ -1086,25 +1089,30 @@ async function analisarAtivo() {
             `</strong>`;
 
 
-        if (data.erro_historico) {
-
-            diagnostic.innerHTML +=
-                `<br>Resposta da Brapi:<br>` +
-                `<strong>` +
-                `${formatarDiagnostico(
-                    data.erro_historico
-                )}` +
-                `</strong>`;
-
-        }
-
-
         diagnostic.innerHTML +=
             `<br><br>` +
             `<strong>Campos recebidos em results[0]:</strong>` +
             `<br>` +
             `${formatarDiagnostico(
                 data.campos_historico
+            )}`;
+
+
+        diagnostic.innerHTML +=
+            `<br><br>` +
+            `<strong>Quantidade em historicalDataPrice:</strong>` +
+            `<br>` +
+            `${formatarDiagnostico(
+                data.quantidade_historico_brapi
+            )}`;
+
+
+        diagnostic.innerHTML +=
+            `<br><br>` +
+            `<strong>Primeiro item de historicalDataPrice:</strong>` +
+            `<br>` +
+            `${formatarDiagnostico(
+                data.primeiro_item_historico
             )}`;
 
 
@@ -1123,6 +1131,19 @@ async function analisarAtivo() {
             `${formatarDiagnostico(
                 data.ultimo_timestamp
             )}`;
+
+
+        if (data.erro_historico) {
+
+            diagnostic.innerHTML +=
+                `<br><br>` +
+                `<strong>Resposta da Brapi:</strong>` +
+                `<br>` +
+                `${formatarDiagnostico(
+                    data.erro_historico
+                )}`;
+
+        }
 
 
         criarGraficoM5(
