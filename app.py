@@ -157,13 +157,28 @@ def analisar():
         # RESPOSTA DO ORION
         # ==============================
 
-        return jsonify({
+    # Diagnóstico do histórico M5
+    primeiro_candle = historico[0] if historico else None
+    ultimo_candle = historico[-1] if historico else None
 
-            "sucesso": True,
+    quantidade_candles = len(historico)
 
-            "ativo": ativo,
+    primeiro_timestamp = (
+        primeiro_candle.get("date")
+        if primeiro_candle
+        else None
+    )
 
-            "status": "cotacao_recebida",
+    ultimo_timestamp = (
+        ultimo_candle.get("date")
+        if ultimo_candle
+        else None
+    )
+
+    return jsonify({
+        "sucesso": True,
+        "ativo": ativo,
+        "status": "cotacao_recebida",
 
             "nome": cotacao.get(
                 "longName"
@@ -200,6 +215,10 @@ def analisar():
             "quantidade_candles": quantidade_candles,
 
             "historico": historico,
+        
+            "quantidade_candles": quantidade_candles,
+            "primeiro_timestamp": primeiro_timestamp,
+            "ultimo_timestamp": ultimo_timestamp
 
             "erro_historico": erro_historico
         })
