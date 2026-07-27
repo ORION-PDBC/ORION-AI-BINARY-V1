@@ -86,6 +86,10 @@ def analisar():
 
         campos_historico = []
 
+        quantidade_historico_brapi = 0
+
+        primeiro_item_historico = None
+
 
         if resposta_historico.status_code == 200:
 
@@ -103,18 +107,31 @@ def analisar():
 
             if resultados_historico:
 
-                # Mostra quais campos a Brapi
-                # realmente devolveu.
                 campos_historico = list(
                     resultados_historico[0].keys()
                 )
 
-                historico = (
+                historico_brapi = (
                     resultados_historico[0].get(
                         "historicalDataPrice",
                         []
                     )
                 )
+
+                if historico_brapi is None:
+                    historico_brapi = []
+
+                quantidade_historico_brapi = len(
+                    historico_brapi
+                )
+
+                if quantidade_historico_brapi > 0:
+
+                    primeiro_item_historico = (
+                        historico_brapi[0]
+                    )
+
+                historico = historico_brapi
 
 
         else:
@@ -133,7 +150,7 @@ def analisar():
 
 
         # =========================
-        # DIAGNÓSTICO DOS CANDLES
+        # DIAGNÓSTICO
         # =========================
 
         quantidade_candles = len(
@@ -214,6 +231,12 @@ def analisar():
 
             "campos_historico":
                 campos_historico,
+
+            "quantidade_historico_brapi":
+                quantidade_historico_brapi,
+
+            "primeiro_item_historico":
+                primeiro_item_historico,
 
             "primeiro_timestamp":
                 primeiro_timestamp,
