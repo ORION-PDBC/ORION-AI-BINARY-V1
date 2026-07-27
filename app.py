@@ -22,8 +22,13 @@ def analisar():
         }), 400
 
     try:
-        # Cotação atual
-        url_cotacao = f"https://brapi.dev/api/quote/{ativo}"
+        # =========================
+        # COTAÇÃO ATUAL
+        # =========================
+
+        url_cotacao = (
+            f"https://brapi.dev/api/quote/{ativo}"
+        )
 
         resposta_cotacao = requests.get(
             url_cotacao,
@@ -34,7 +39,10 @@ def analisar():
             return jsonify({
                 "sucesso": False,
                 "ativo": ativo,
-                "erro": "Não foi possível obter os dados do ativo."
+                "erro": (
+                    "Não foi possível obter "
+                    "os dados do ativo."
+                )
             }), 502
 
         dados_brapi = resposta_cotacao.json()
@@ -54,7 +62,10 @@ def analisar():
         cotacao = resultados[0]
 
 
-        # Histórico intraday M5
+        # =========================
+        # HISTÓRICO M5
+        # =========================
+
         url_historico = (
             f"https://brapi.dev/api/quote/{ativo}"
             f"?range=1d&interval=5m"
@@ -73,6 +84,9 @@ def analisar():
 
         erro_historico = None
 
+        campos_historico = []
+
+
         if resposta_historico.status_code == 200:
 
             dados_historico = (
@@ -86,7 +100,14 @@ def analisar():
                 )
             )
 
+
             if resultados_historico:
+
+                # Mostra quais campos a Brapi
+                # realmente devolveu.
+                campos_historico = list(
+                    resultados_historico[0].keys()
+                )
 
                 historico = (
                     resultados_historico[0].get(
@@ -95,20 +116,30 @@ def analisar():
                     )
                 )
 
+
         else:
 
             try:
+
                 erro_historico = (
                     resposta_historico.json()
                 )
 
             except ValueError:
+
                 erro_historico = (
                     resposta_historico.text
                 )
 
 
-        # Diagnóstico do histórico M5
+        # =========================
+        # DIAGNÓSTICO DOS CANDLES
+        # =========================
+
+        quantidade_candles = len(
+            historico
+        )
+
         primeiro_candle = (
             historico[0]
             if historico
@@ -119,10 +150,6 @@ def analisar():
             historico[-1]
             if historico
             else None
-        )
-
-        quantidade_candles = len(
-            historico
         )
 
         primeiro_timestamp = (
@@ -137,6 +164,10 @@ def analisar():
             else None
         )
 
+
+        # =========================
+        # RESPOSTA
+        # =========================
 
         return jsonify({
 
@@ -181,6 +212,9 @@ def analisar():
             "quantidade_candles":
                 quantidade_candles,
 
+            "campos_historico":
+                campos_historico,
+
             "primeiro_timestamp":
                 primeiro_timestamp,
 
@@ -198,12 +232,16 @@ def analisar():
     except requests.RequestException as erro:
 
         return jsonify({
+
             "sucesso": False,
+
             "ativo": ativo,
+
             "erro": (
                 f"Erro ao consultar a Brapi: "
                 f"{str(erro)}"
             )
+
         }), 502
 
 
