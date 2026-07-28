@@ -207,6 +207,22 @@
             color: #d9e7f2;
         }
 
+        .json-box {
+            margin-top: 15px;
+            padding: 15px;
+            font-size: 12px;
+            line-height: 1.5;
+            color: #d9e7f2;
+            background: #050e18;
+            border: 1px solid #193653;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            word-break: break-word;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
         .chart-section {
             margin-top: 30px;
         }
@@ -452,6 +468,15 @@
             Diagnóstico: aguardando consulta...
         </div>
 
+
+        <div
+            class="json-box"
+            id="marketDiagnostic"
+        >
+            Resposta recebida pelo navegador:
+            aguardando consulta...
+        </div>
+
     </section>
 
 
@@ -538,6 +563,9 @@ const historyStatus =
 const diagnostic =
     document.getElementById("diagnostic");
 
+const marketDiagnostic =
+    document.getElementById("marketDiagnostic");
+
 const chartInfo =
     document.getElementById("chartInfo");
 
@@ -552,7 +580,10 @@ function formatarNumero(valor) {
     if (
         valor === null ||
         valor === undefined ||
-        isNaN(valor)
+        valor === "" ||
+        !Number.isFinite(
+            Number(valor)
+        )
     ) {
         return "—";
     }
@@ -572,7 +603,10 @@ function formatarVolume(valor) {
     if (
         valor === null ||
         valor === undefined ||
-        isNaN(valor)
+        valor === "" ||
+        !Number.isFinite(
+            Number(valor)
+        )
     ) {
         return "—";
     }
@@ -589,7 +623,7 @@ function formatarDiagnostico(valor) {
         valor === null ||
         valor === undefined
     ) {
-        return "—";
+        return "null";
     }
 
     if (
@@ -611,6 +645,60 @@ function formatarDiagnostico(valor) {
         return String(valor);
 
     }
+}
+
+
+function mostrarDiagnosticoResposta(data) {
+
+    const diagnosticoMercado = {
+
+        sucesso:
+            data.sucesso,
+
+        ativo:
+            data.ativo,
+
+        status:
+            data.status,
+
+        nome:
+            data.nome,
+
+        preco:
+            data.preco,
+
+        variacao:
+            data.variacao,
+
+        variacao_percentual:
+            data.variacao_percentual,
+
+        maxima:
+            data.maxima,
+
+        minima:
+            data.minima,
+
+        volume:
+            data.volume,
+
+        quantidade_candles:
+            data.quantidade_candles,
+
+        status_historico:
+            data.status_historico,
+
+        erro_historico:
+            data.erro_historico
+
+    };
+
+
+    marketDiagnostic.textContent =
+        "RESPOSTA RECEBIDA PELO NAVEGADOR\n\n" +
+        formatarDiagnostico(
+            diagnosticoMercado
+        );
 }
 
 
@@ -959,6 +1047,11 @@ async function analisarAtivo() {
         "Diagnóstico: consultando Brapi...";
 
 
+    marketDiagnostic.textContent =
+        "Resposta recebida pelo navegador:\n\n" +
+        "aguardando resposta...";
+
+
     chartInfo.textContent =
         "Preparando gráfico M5...";
 
@@ -987,8 +1080,41 @@ async function analisarAtivo() {
             );
 
 
-        const data =
-            await response.json();
+        const textoResposta =
+            await response.text();
+
+
+        let data;
+
+
+        try {
+
+            data =
+                JSON.parse(
+                    textoResposta
+                );
+
+        } catch {
+
+            throw new Error(
+                "O servidor respondeu, " +
+                "mas a resposta não é um JSON válido.\n\n" +
+                textoResposta
+            );
+
+        }
+
+
+        /*
+         * DIAGNÓSTICO CRÍTICO:
+         *
+         * Aqui registramos exatamente o que
+         * chegou ao navegador.
+         */
+
+        mostrarDiagnosticoResposta(
+            data
+        );
 
 
         if (
@@ -1030,51 +1156,127 @@ async function analisarAtivo() {
             "● ORION AI — análise recebida";
 
 
-        price.textContent =
+        /*
+         * ==========================================
+         * DADOS DE MERCADO
+         * ==========================================
+         *
+         * Cada campo é tratado separadamente.
+         */
+
+
+        if (
             data.preco !== null &&
             data.preco !== undefined
-                ? `R$ ${formatarNumero(
+        ) {
+
+            price.textContent =
+                `R$ ${formatarNumero(
                     data.preco
-                )}`
-                : "—";
+                )}`;
+
+        } else {
+
+            price.textContent =
+                "—";
+
+        }
 
 
-        change.textContent =
+        if (
             data.variacao_percentual !== null &&
             data.variacao_percentual !== undefined
-                ? `${formatarNumero(
+        ) {
+
+            change.textContent =
+                `${formatarNumero(
                     data.variacao_percentual
-                )}%`
-                : "—";
+                )}%`;
+
+        } else {
+
+            change.textContent =
+                "—";
+
+        }
 
 
-        high.textContent =
+        if (
             data.maxima !== null &&
             data.maxima !== undefined
-                ? `R$ ${formatarNumero(
+        ) {
+
+            high.textContent =
+                `R$ ${formatarNumero(
                     data.maxima
-                )}`
-                : "—";
+                )}`;
+
+        } else {
+
+            high.textContent =
+                "—";
+
+        }
 
 
-        low.textContent =
+        if (
             data.minima !== null &&
             data.minima !== undefined
-                ? `R$ ${formatarNumero(
+        ) {
+
+            low.textContent =
+                `R$ ${formatarNumero(
                     data.minima
-                )}`
-                : "—";
+                )}`;
+
+        } else {
+
+            low.textContent =
+                "—";
+
+        }
 
 
-        volume.textContent =
-            formatarVolume(
-                data.volume
-            );
+        if (
+            data.volume !== null &&
+            data.volume !== undefined
+        ) {
+
+            volume.textContent =
+                formatarVolume(
+                    data.volume
+                );
+
+        } else {
+
+            volume.textContent =
+                "—";
+
+        }
 
 
-        company.textContent =
-            data.nome ||
-            "—";
+        if (
+            data.nome !== null &&
+            data.nome !== undefined &&
+            String(data.nome).trim() !== ""
+        ) {
+
+            company.textContent =
+                data.nome;
+
+        } else {
+
+            company.textContent =
+                "—";
+
+        }
+
+
+        /*
+         * ==========================================
+         * HISTÓRICO M5
+         * ==========================================
+         */
 
 
         historyStatus.innerHTML =
@@ -1145,6 +1347,11 @@ async function analisarAtivo() {
 
         }
 
+
+        /*
+         * Monta o gráfico sem alterar
+         * a estrutura dos candles.
+         */
 
         criarGraficoM5(
             data.historico
