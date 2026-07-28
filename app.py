@@ -99,9 +99,19 @@ def analisar():
             )
         ):
 
-            cotacao = (
-                resultados_cotacao[0]
-            )
+        cotacao = (
+            resultados_cotacao[0]
+        )
+
+        print("==========================================")
+        print("DEBUG COTAÇÃO BRAPI")
+        print("==========================================")
+        print("JSON COMPLETO DA COTAÇÃO:")
+        print(dados_cotacao)
+        print("==========================================")
+        print("RESULTADOS[0]:")
+        print(cotacao)
+        print("==========================================")
 
 
         # ==================================================
