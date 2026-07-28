@@ -1,268 +1,498 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
     <title>ORION AI</title>
 
     <style>
+
         * {
             box-sizing: border-box;
         }
 
         body {
+
             margin: 0;
-            font-family: Arial, sans-serif;
+
+            font-family:
+                Arial,
+                sans-serif;
+
             background: #06111f;
+
             color: #ffffff;
+
         }
+
 
         .container {
+
             width: 100%;
+
             max-width: 1100px;
+
             margin: 0 auto;
+
             padding: 40px 20px;
+
         }
+
 
         header {
-            padding: 20px 0 35px;
-            border-bottom: 1px solid #1b3854;
+
+            padding:
+                20px
+                0
+                35px;
+
+            border-bottom:
+                1px solid #1b3854;
+
             margin-bottom: 30px;
+
         }
+
 
         .status {
+
             color: #55e6a5;
+
             font-size: 15px;
+
             margin-bottom: 15px;
+
         }
+
 
         h1 {
+
             margin: 0;
+
             font-size: 42px;
+
             letter-spacing: 1px;
+
         }
+
 
         .subtitle {
+
             margin-top: 10px;
+
             color: #9db2c7;
+
             font-size: 17px;
+
         }
+
 
         section {
+
             margin-bottom: 30px;
+
         }
+
 
         .panel {
+
             background: #0b1b2d;
-            border: 1px solid #193653;
+
+            border:
+                1px solid #193653;
+
             border-radius: 14px;
+
             padding: 25px;
+
         }
+
 
         .label {
+
             display: block;
+
             margin-bottom: 10px;
+
             color: #9db2c7;
+
             font-size: 14px;
+
             text-transform: uppercase;
+
             letter-spacing: 1px;
+
         }
+
 
         input {
+
             width: 100%;
+
             padding: 16px;
+
             border-radius: 10px;
-            border: 1px solid #294967;
+
+            border:
+                1px solid #294967;
+
             background: #071522;
+
             color: #ffffff;
+
             font-size: 16px;
+
             outline: none;
+
         }
+
 
         input:focus {
+
             border-color: #55e6a5;
+
         }
+
 
         button {
+
             width: 100%;
+
             margin-top: 15px;
+
             padding: 16px;
+
             border: 0;
+
             border-radius: 10px;
+
             background: #55e6a5;
+
             color: #06111f;
+
             font-size: 16px;
+
             font-weight: bold;
+
             cursor: pointer;
+
         }
+
 
         button:hover {
+
             opacity: 0.9;
+
         }
+
 
         button:disabled {
+
             opacity: 0.5;
+
             cursor: not-allowed;
+
         }
+
 
         .result {
+
             margin-top: 20px;
+
             padding: 18px;
+
             border-radius: 10px;
+
             background: #071522;
-            border: 1px solid #193653;
+
+            border:
+                1px solid #193653;
+
             min-height: 60px;
+
             color: #d9e7f2;
+
             white-space: pre-wrap;
+
         }
+
 
         .error {
+
             color: #ff7b7b;
+
         }
+
 
         .success {
+
             color: #55e6a5;
+
         }
+
 
         .cards {
+
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
             gap: 15px;
+
         }
 
+
         .card {
+
             background: #0b1b2d;
-            border: 1px solid #193653;
+
+            border:
+                1px solid #193653;
+
             border-radius: 12px;
+
             padding: 20px;
+
         }
+
 
         .card-label,
         .market-label {
+
             display: block;
+
             color: #7892aa;
+
             font-size: 12px;
+
             margin-bottom: 8px;
+
             text-transform: uppercase;
+
         }
+
 
         .card strong,
         .market-value {
+
             font-size: 20px;
+
         }
+
 
         .market-section {
+
             margin-top: 30px;
+
         }
+
 
         .market-title {
+
             margin-bottom: 15px;
+
             color: #9db2c7;
+
             font-size: 14px;
+
             text-transform: uppercase;
+
             letter-spacing: 1px;
+
         }
+
 
         .market-grid {
+
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+
+            grid-template-columns:
+                repeat(3, 1fr);
+
             gap: 15px;
+
         }
+
 
         .market-card {
+
             background: #0b1b2d;
-            border: 1px solid #193653;
+
+            border:
+                1px solid #193653;
+
             border-radius: 12px;
+
             padding: 20px;
+
         }
+
 
         .history-status {
+
             margin-top: 15px;
+
             padding: 15px;
+
             border-radius: 10px;
+
             background: #071522;
-            border: 1px solid #193653;
+
+            border:
+                1px solid #193653;
+
             color: #9db2c7;
+
             white-space: pre-wrap;
+
         }
+
 
         .history-status strong {
+
             color: #55e6a5;
+
         }
+
 
         .diagnostic {
+
             margin-top: 10px;
+
             padding: 15px;
+
             font-size: 13px;
+
             color: #7892aa;
+
             background: #071522;
+
             border-radius: 8px;
+
             white-space: pre-wrap;
+
             word-break: break-word;
+
             overflow-x: auto;
+
         }
+
 
         .diagnostic strong {
+
             color: #d9e7f2;
+
         }
+
 
         .chart-section {
+
             margin-top: 30px;
+
         }
+
 
         .chart-container {
+
             width: 100%;
+
             height: 520px;
+
             background: #071522;
-            border: 1px solid #193653;
+
+            border:
+                1px solid #193653;
+
             border-radius: 14px;
+
             overflow: hidden;
+
             position: relative;
+
             touch-action: none;
+
         }
 
+
         #chart {
+
             width: 100%;
+
             height: 100%;
+
         }
+
 
         .chart-info,
         .chart-help {
+
             margin-top: 10px;
+
             color: #7892aa;
+
             font-size: 13px;
+
         }
+
 
         @media (max-width: 700px) {
 
             h1 {
+
                 font-size: 32px;
+
             }
+
 
             .cards,
             .market-grid {
+
                 grid-template-columns: 1fr;
+
             }
 
+
             .chart-container {
+
                 height: 430px;
+
             }
+
         }
+
     </style>
+
 </head>
+
 
 <body>
 
+
 <div class="container">
+
 
     <header>
 
-        <div class="status" id="status">
+        <div
+            class="status"
+            id="status"
+        >
             ● ORION AI — sistema pronto
         </div>
 
-        <h1>ORION AI</h1>
+
+        <h1>
+            ORION AI
+        </h1>
+
 
         <div class="subtitle">
             Plataforma de análise de ativos
@@ -271,20 +501,26 @@
     </header>
 
 
+
     <section>
 
         <div class="panel">
 
-            <label class="label" for="asset">
+            <label
+                class="label"
+                for="asset"
+            >
                 Ativo
             </label>
+
 
             <input
                 id="asset"
                 type="text"
-                placeholder="Ex.: BTC, PETR4, VALE3..."
+                placeholder="Ex.: PETR4, VALE3..."
                 autocomplete="off"
             >
+
 
             <button
                 id="analyzeButton"
@@ -292,6 +528,7 @@
             >
                 ANALISAR ATIVO
             </button>
+
 
             <div
                 class="result"
@@ -305,9 +542,12 @@
     </section>
 
 
+
     <section class="cards">
 
+
         <div class="card">
+
             <span class="card-label">
                 Ativo
             </span>
@@ -315,10 +555,12 @@
             <strong id="assetName">
                 —
             </strong>
+
         </div>
 
 
         <div class="card">
+
             <span class="card-label">
                 Status
             </span>
@@ -326,10 +568,12 @@
             <strong id="analysisStatus">
                 Aguardando
             </strong>
+
         </div>
 
 
         <div class="card">
+
             <span class="card-label">
                 Conexão
             </span>
@@ -337,12 +581,16 @@
             <strong id="connectionStatus">
                 Online
             </strong>
+
         </div>
+
 
     </section>
 
 
+
     <section class="market-section">
+
 
         <div class="market-title">
             Dados de mercado
@@ -351,7 +599,9 @@
 
         <div class="market-grid">
 
+
             <div class="market-card">
+
                 <span class="market-label">
                     Preço atual
                 </span>
@@ -362,10 +612,12 @@
                 >
                     —
                 </strong>
+
             </div>
 
 
             <div class="market-card">
+
                 <span class="market-label">
                     Variação
                 </span>
@@ -376,10 +628,12 @@
                 >
                     —
                 </strong>
+
             </div>
 
 
             <div class="market-card">
+
                 <span class="market-label">
                     Máxima do dia
                 </span>
@@ -390,10 +644,12 @@
                 >
                     —
                 </strong>
+
             </div>
 
 
             <div class="market-card">
+
                 <span class="market-label">
                     Mínima do dia
                 </span>
@@ -404,10 +660,12 @@
                 >
                     —
                 </strong>
+
             </div>
 
 
             <div class="market-card">
+
                 <span class="market-label">
                     Volume
                 </span>
@@ -418,10 +676,12 @@
                 >
                     —
                 </strong>
+
             </div>
 
 
             <div class="market-card">
+
                 <span class="market-label">
                     Empresa
                 </span>
@@ -432,30 +692,39 @@
                 >
                     —
                 </strong>
+
             </div>
 
+
         </div>
+
 
 
         <div
             class="history-status"
             id="historyStatus"
         >
-            Histórico M5: aguardando consulta...
+            Histórico M5:
+            aguardando consulta...
         </div>
+
 
 
         <div
             class="diagnostic"
             id="diagnostic"
         >
-            Diagnóstico: aguardando consulta...
+            Diagnóstico:
+            aguardando consulta...
         </div>
+
 
     </section>
 
 
+
     <section class="chart-section">
+
 
         <div class="market-title">
             Gráfico de Velas — M5
@@ -478,68 +747,123 @@
 
 
         <div class="chart-help">
+
             Arraste o gráfico para navegar •
             Use a roda do mouse para zoom •
             Passe o mouse sobre uma vela para consultar os valores
+
         </div>
+
 
     </section>
 
+
 </div>
+
 
 
 <script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
 
 
+
 <script>
 
+
 const assetInput =
-    document.getElementById("asset");
+    document.getElementById(
+        "asset"
+    );
+
 
 const analyzeButton =
-    document.getElementById("analyzeButton");
+    document.getElementById(
+        "analyzeButton"
+    );
+
 
 const result =
-    document.getElementById("result");
+    document.getElementById(
+        "result"
+    );
+
 
 const assetName =
-    document.getElementById("assetName");
+    document.getElementById(
+        "assetName"
+    );
+
 
 const analysisStatus =
-    document.getElementById("analysisStatus");
+    document.getElementById(
+        "analysisStatus"
+    );
+
 
 const connectionStatus =
-    document.getElementById("connectionStatus");
+    document.getElementById(
+        "connectionStatus"
+    );
+
 
 const status =
-    document.getElementById("status");
+    document.getElementById(
+        "status"
+    );
+
 
 const price =
-    document.getElementById("price");
+    document.getElementById(
+        "price"
+    );
+
 
 const change =
-    document.getElementById("change");
+    document.getElementById(
+        "change"
+    );
+
 
 const high =
-    document.getElementById("high");
+    document.getElementById(
+        "high"
+    );
+
 
 const low =
-    document.getElementById("low");
+    document.getElementById(
+        "low"
+    );
+
 
 const volume =
-    document.getElementById("volume");
+    document.getElementById(
+        "volume"
+    );
+
 
 const company =
-    document.getElementById("company");
+    document.getElementById(
+        "company"
+    );
+
 
 const historyStatus =
-    document.getElementById("historyStatus");
+    document.getElementById(
+        "historyStatus"
+    );
+
 
 const diagnostic =
-    document.getElementById("diagnostic");
+    document.getElementById(
+        "diagnostic"
+    );
+
 
 const chartInfo =
-    document.getElementById("chartInfo");
+    document.getElementById(
+        "chartInfo"
+    );
+
 
 
 let chart = null;
@@ -547,40 +871,66 @@ let chart = null;
 let candleSeries = null;
 
 
+
+function numeroValido(valor) {
+
+    return (
+        valor !== null &&
+        valor !== undefined &&
+        valor !== "" &&
+        Number.isFinite(
+            Number(valor)
+        )
+    );
+
+}
+
+
+
 function formatarNumero(valor) {
 
     if (
-        valor === null ||
-        valor === undefined ||
-        isNaN(valor)
+        !numeroValido(valor)
     ) {
+
         return "—";
+
     }
 
-    return Number(valor).toLocaleString(
+
+    return Number(
+        valor
+    ).toLocaleString(
         "pt-BR",
         {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2
         }
     );
+
 }
+
 
 
 function formatarVolume(valor) {
 
     if (
-        valor === null ||
-        valor === undefined ||
-        isNaN(valor)
+        !numeroValido(valor)
     ) {
+
         return "—";
+
     }
 
-    return Number(valor).toLocaleString(
+
+    return Number(
+        valor
+    ).toLocaleString(
         "pt-BR"
     );
+
 }
+
 
 
 function formatarDiagnostico(valor) {
@@ -589,14 +939,20 @@ function formatarDiagnostico(valor) {
         valor === null ||
         valor === undefined
     ) {
+
         return "—";
+
     }
+
 
     if (
         typeof valor === "string"
     ) {
+
         return valor;
+
     }
+
 
     try {
 
@@ -606,111 +962,190 @@ function formatarDiagnostico(valor) {
             2
         );
 
-    } catch {
+    }
 
-        return String(valor);
+    catch {
+
+        return String(
+            valor
+        );
 
     }
+
 }
 
 
-function criarGraficoM5(historico) {
+
+function escaparHTML(valor) {
+
+    return String(
+        valor ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
+    );
+
+}
+
+
+
+function criarGraficoM5(
+    historico
+) {
+
 
     if (
-        !historico ||
-        !Array.isArray(historico) ||
+        !Array.isArray(
+            historico
+        ) ||
         historico.length === 0
     ) {
 
         chartInfo.textContent =
-            "Nenhum candle M5 disponível para exibição.";
+            "Nenhum candle M5 disponível.";
 
         return;
+
     }
 
 
-    const dados =
-        historico
-            .filter(candle =>
 
-                candle &&
-
-                candle.open !== undefined &&
-
-                candle.high !== undefined &&
-
-                candle.low !== undefined &&
-
-                candle.close !== undefined &&
-
-                candle.date !== undefined
-
-            )
-            .map(candle => {
-
-                const timestamp =
-                    Number(candle.date);
+    const dados = [];
 
 
-                return {
+    for (
+        const candle
+        of historico
+    ) {
 
-                    time:
-                        timestamp > 10000000000
-                            ? Math.floor(
-                                timestamp / 1000
-                            )
-                            : Math.floor(
-                                timestamp
-                            ),
 
-                    open:
-                        Number(candle.open),
+        if (
+            !candle
+        ) {
 
-                    high:
-                        Number(candle.high),
+            continue;
 
-                    low:
-                        Number(candle.low),
+        }
 
-                    close:
-                        Number(candle.close)
 
-                };
-
-            })
-            .filter(candle =>
-
-                Number.isFinite(
-                    candle.time
-                ) &&
-
-                Number.isFinite(
-                    candle.open
-                ) &&
-
-                Number.isFinite(
-                    candle.high
-                ) &&
-
-                Number.isFinite(
-                    candle.low
-                ) &&
-
-                Number.isFinite(
-                    candle.close
-                )
-
+        const timestamp =
+            Number(
+                candle.date
             );
 
 
-    if (dados.length === 0) {
+        const open =
+            Number(
+                candle.open
+            );
+
+
+        const high =
+            Number(
+                candle.high
+            );
+
+
+        const low =
+            Number(
+                candle.low
+            );
+
+
+        const close =
+            Number(
+                candle.close
+            );
+
+
+
+        if (
+            !Number.isFinite(
+                timestamp
+            ) ||
+            !Number.isFinite(
+                open
+            ) ||
+            !Number.isFinite(
+                high
+            ) ||
+            !Number.isFinite(
+                low
+            ) ||
+            !Number.isFinite(
+                close
+            )
+        ) {
+
+            continue;
+
+        }
+
+
+
+        const time =
+            timestamp > 10000000000
+                ? Math.floor(
+                    timestamp / 1000
+                )
+                : Math.floor(
+                    timestamp
+                );
+
+
+
+        dados.push({
+
+            time:
+                time,
+
+            open:
+                open,
+
+            high:
+                high,
+
+            low:
+                low,
+
+            close:
+                close
+
+        });
+
+    }
+
+
+
+    if (
+        dados.length === 0
+    ) {
 
         chartInfo.textContent =
             "Os candles foram recebidos, " +
-            "mas não possuem dados OHLC/tempo utilizáveis.";
+            "mas não possuem OHLC utilizável.";
 
         return;
+
     }
+
 
 
     dados.sort(
@@ -719,128 +1154,157 @@ function criarGraficoM5(historico) {
     );
 
 
+
     const dadosUnicos = [];
 
-    const tempos = new Set();
+    let ultimoTempo = null;
 
 
-    dados.forEach(candle => {
+    for (
+        const candle
+        of dados
+    ) {
+
 
         if (
-            !tempos.has(candle.time)
+            candle.time ===
+            ultimoTempo
         ) {
 
-            tempos.add(
-                candle.time
-            );
-
-            dadosUnicos.push(
-                candle
-            );
+            continue;
 
         }
 
-    });
+
+        dadosUnicos.push(
+            candle
+        );
 
 
-    if (!chart) {
+        ultimoTempo =
+            candle.time;
+
+    }
+
+
+
+    if (
+        !chart
+    ) {
+
+
+        const elemento =
+            document.getElementById(
+                "chart"
+            );
+
 
         chart =
-            LightweightCharts.createChart(
-                document.getElementById("chart"),
-                {
+            LightweightCharts
+                .createChart(
+                    elemento,
+                    {
 
-                    width:
-                        document.getElementById(
-                            "chart"
-                        ).clientWidth,
+                        width:
+                            elemento.clientWidth,
 
-                    height:
-                        document.getElementById(
-                            "chart"
-                        ).clientHeight,
+                        height:
+                            elemento.clientHeight,
 
-                    layout: {
 
-                        background: {
-                            color: "#071522"
+                        layout: {
+
+                            background: {
+                                color:
+                                    "#071522"
+                            },
+
+                            textColor:
+                                "#9db2c7"
+
                         },
 
-                        textColor: "#9db2c7"
 
-                    },
+                        grid: {
 
-                    grid: {
+                            vertLines: {
+                                color:
+                                    "#10283d"
+                            },
 
-                        vertLines: {
-                            color: "#10283d"
-                        },
-
-                        horzLines: {
-                            color: "#10283d"
-                        }
-
-                    },
-
-                    crosshair: {
-
-                        mode:
-                            LightweightCharts
-                                .CrosshairMode
-                                .Normal
-
-                    },
-
-                    rightPriceScale: {
-
-                        borderColor:
-                            "#193653"
-
-                    },
-
-                    timeScale: {
-
-                        borderColor:
-                            "#193653",
-
-                        timeVisible:
-                            true,
-
-                        secondsVisible:
-                            false,
-
-                        rightOffset:
-                            5,
-
-                        barSpacing:
-                            8,
-
-                        minBarSpacing:
-                            2
-
-                    },
-
-                    localization: {
-
-                        priceFormatter:
-                            function(valor) {
-
-                                return Number(
-                                    valor
-                                ).toLocaleString(
-                                    "pt-BR",
-                                    {
-                                        minimumFractionDigits: 2,
-                                        maximumFractionDigits: 2
-                                    }
-                                );
-
+                            horzLines: {
+                                color:
+                                    "#10283d"
                             }
 
-                    }
+                        },
 
-                }
-            );
+
+                        crosshair: {
+
+                            mode:
+                                LightweightCharts
+                                    .CrosshairMode
+                                    .Normal
+
+                        },
+
+
+                        rightPriceScale: {
+
+                            borderColor:
+                                "#193653"
+
+                        },
+
+
+                        timeScale: {
+
+                            borderColor:
+                                "#193653",
+
+                            timeVisible:
+                                true,
+
+                            secondsVisible:
+                                false,
+
+                            rightOffset:
+                                5,
+
+                            barSpacing:
+                                8,
+
+                            minBarSpacing:
+                                2
+
+                        },
+
+
+                        localization: {
+
+                            priceFormatter:
+                                function(
+                                    valor
+                                ) {
+
+                                    return Number(
+                                        valor
+                                    ).toLocaleString(
+                                        "pt-BR",
+                                        {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2
+                                        }
+                                    );
+
+                                }
+
+                        }
+
+                    }
+                );
+
 
 
         candleSeries =
@@ -864,22 +1328,33 @@ function criarGraficoM5(historico) {
             });
 
 
+
         window.addEventListener(
             "resize",
             function() {
 
-                if (!chart) {
+
+                if (
+                    !chart
+                ) {
+
                     return;
+
                 }
+
 
                 const elemento =
                     document.getElementById(
                         "chart"
                     );
 
+
                 chart.resize(
+
                     elemento.clientWidth,
+
                     elemento.clientHeight
+
                 );
 
             }
@@ -888,28 +1363,243 @@ function criarGraficoM5(historico) {
     }
 
 
+
     candleSeries.setData(
         dadosUnicos
     );
 
 
-    chart.timeScale().fitContent();
+    chart.timeScale()
+        .fitContent();
+
 
 
     chartInfo.textContent =
         `Exibindo ${dadosUnicos.length} candles M5. ` +
-        `Arraste para navegar e use a roda do mouse para zoom.`;
+        `Primeiro timestamp: ${dadosUnicos[0].time}. ` +
+        `Último timestamp: ${dadosUnicos[dadosUnicos.length - 1].time}.`;
 
 }
 
 
+
+function atualizarMercado(
+    data
+) {
+
+
+    /*
+     * IMPORTANTE:
+     * somente atualizamos os campos
+     * se os dados realmente existirem.
+     *
+     * Assim uma falha parcial não
+     * apaga uma cotação válida.
+     */
+
+
+    if (
+        numeroValido(
+            data.preco
+        )
+    ) {
+
+        price.textContent =
+            `R$ ${formatarNumero(
+                data.preco
+            )}`;
+
+    }
+
+
+
+    if (
+        numeroValido(
+            data.variacao_percentual
+        )
+    ) {
+
+        change.textContent =
+            `${formatarNumero(
+                data.variacao_percentual
+            )}%`;
+
+    }
+
+
+
+    if (
+        numeroValido(
+            data.maxima
+        )
+    ) {
+
+        high.textContent =
+            `R$ ${formatarNumero(
+                data.maxima
+            )}`;
+
+    }
+
+
+
+    if (
+        numeroValido(
+            data.minima
+        )
+    ) {
+
+        low.textContent =
+            `R$ ${formatarNumero(
+                data.minima
+            )}`;
+
+    }
+
+
+
+    if (
+        numeroValido(
+            data.volume
+        )
+    ) {
+
+        volume.textContent =
+            formatarVolume(
+                data.volume
+            );
+
+    }
+
+
+
+    if (
+        data.nome
+    ) {
+
+        company.textContent =
+            data.nome;
+
+    }
+
+}
+
+
+
+function atualizarDiagnostico(
+    data
+) {
+
+
+    let html = "";
+
+
+    html +=
+        `<strong>Status HTTP da Brapi:</strong>` +
+        `<br>` +
+        `${escaparHTML(
+            data.status_historico
+        )}`;
+
+
+
+    html +=
+        `<br><br>` +
+        `<strong>Campos recebidos em results[0]:</strong>` +
+        `<br>` +
+        `${escaparHTML(
+            formatarDiagnostico(
+                data.campos_historico
+            )
+        )}`;
+
+
+
+    html +=
+        `<br><br>` +
+        `<strong>Quantidade em historicalDataPrice:</strong>` +
+        `<br>` +
+        `${escaparHTML(
+            formatarDiagnostico(
+                data.quantidade_historico_brapi
+            )
+        )}`;
+
+
+
+    html +=
+        `<br><br>` +
+        `<strong>Primeiro item de historicalDataPrice:</strong>` +
+        `<br>` +
+        `${escaparHTML(
+            formatarDiagnostico(
+                data.primeiro_item_historico
+            )
+        )}`;
+
+
+
+    html +=
+        `<br><br>` +
+        `<strong>Primeiro timestamp:</strong>` +
+        `<br>` +
+        `${escaparHTML(
+            formatarDiagnostico(
+                data.primeiro_timestamp
+            )
+        )}`;
+
+
+
+    html +=
+        `<br><strong>Último timestamp:</strong>` +
+        `<br>` +
+        `${escaparHTML(
+            formatarDiagnostico(
+                data.ultimo_timestamp
+            )
+        )}`;
+
+
+
+    if (
+        data.erro_historico
+    ) {
+
+        html +=
+            `<br><br>` +
+            `<strong>Resposta da Brapi:</strong>` +
+            `<br>` +
+            `${escaparHTML(
+                formatarDiagnostico(
+                    data.erro_historico
+                )
+            )}`;
+
+    }
+
+
+
+    diagnostic.innerHTML =
+        html;
+
+}
+
+
+
 async function analisarAtivo() {
 
+
     const ativo =
-        assetInput.value.trim();
+        assetInput.value
+            .trim()
+            .toUpperCase();
 
 
-    if (!ativo) {
+
+    if (
+        !ativo
+    ) {
 
         result.textContent =
             "Digite um ativo antes de analisar.";
@@ -921,22 +1611,27 @@ async function analisarAtivo() {
             "Erro";
 
         return;
+
     }
+
 
 
     analyzeButton.disabled =
         true;
 
 
+
     result.className =
         "result";
 
+
     result.textContent =
-        "Enviando ativo para o ORION AI...";
+        "Consultando cotação e histórico M5...";
+
 
 
     assetName.textContent =
-        ativo.toUpperCase();
+        ativo;
 
 
     analysisStatus.textContent =
@@ -948,22 +1643,27 @@ async function analisarAtivo() {
 
 
     status.textContent =
-        "● ORION AI — enviando análise";
+        "● ORION AI — consultando mercado";
+
 
 
     historyStatus.textContent =
         "Histórico M5: consultando dados...";
 
 
+
     diagnostic.textContent =
         "Diagnóstico: consultando Brapi...";
+
 
 
     chartInfo.textContent =
         "Preparando gráfico M5...";
 
 
+
     try {
+
 
         const response =
             await fetch(
@@ -974,21 +1674,48 @@ async function analisarAtivo() {
                         "POST",
 
                     headers: {
+
                         "Content-Type":
+                            "application/json",
+
+                        "Accept":
                             "application/json"
+
                     },
 
                     body:
                         JSON.stringify({
-                            ativo: ativo
+
+                            ativo:
+                                ativo
+
                         })
 
                 }
             );
 
 
-        const data =
-            await response.json();
+
+        let data;
+
+
+        try {
+
+            data =
+                await response.json();
+
+        }
+
+        catch {
+
+            throw new Error(
+                `O servidor retornou ` +
+                `HTTP ${response.status}, ` +
+                `mas a resposta não é JSON válido.`
+            );
+
+        }
+
 
 
         if (
@@ -997,25 +1724,35 @@ async function analisarAtivo() {
         ) {
 
             throw new Error(
+
                 data.erro ||
-                "O servidor não conseguiu processar a análise."
+                `O servidor retornou HTTP ${response.status}.`
+
             );
 
         }
 
 
-        result.className =
-            "result success";
+
+        /*
+         * Primeiro atualizamos a cotação.
+         * Depois tratamos o histórico.
+         *
+         * Assim o gráfico nunca poderá
+         * impedir a exibição da cotação.
+         */
 
 
-        result.textContent =
-            data.mensagem ||
-            `Ativo ${data.ativo} recebido para análise.`;
+        atualizarMercado(
+            data
+        );
+
 
 
         assetName.textContent =
             data.ativo ||
-            ativo.toUpperCase();
+            ativo;
+
 
 
         analysisStatus.textContent =
@@ -1027,133 +1764,91 @@ async function analisarAtivo() {
 
 
         status.textContent =
-            "● ORION AI — análise recebida";
+            "● ORION AI — dados recebidos";
 
 
-        price.textContent =
-            data.preco !== null &&
-            data.preco !== undefined
-                ? `R$ ${formatarNumero(
-                    data.preco
-                )}`
-                : "—";
+
+        result.className =
+            "result success";
 
 
-        change.textContent =
-            data.variacao_percentual !== null &&
-            data.variacao_percentual !== undefined
-                ? `${formatarNumero(
-                    data.variacao_percentual
-                )}%`
-                : "—";
+        result.textContent =
+            data.mensagem ||
+            `Ativo ${data.ativo || ativo} recebido para análise.`;
 
 
-        high.textContent =
-            data.maxima !== null &&
-            data.maxima !== undefined
-                ? `R$ ${formatarNumero(
-                    data.maxima
-                )}`
-                : "—";
 
+        const quantidade =
+            Number(
+                data.quantidade_candles
+            ) || 0;
 
-        low.textContent =
-            data.minima !== null &&
-            data.minima !== undefined
-                ? `R$ ${formatarNumero(
-                    data.minima
-                )}`
-                : "—";
-
-
-        volume.textContent =
-            formatarVolume(
-                data.volume
-            );
-
-
-        company.textContent =
-            data.nome ||
-            "—";
 
 
         historyStatus.innerHTML =
-            `Histórico M5: <strong>` +
-            `${data.quantidade_candles || 0}` +
+
+            `Histórico M5: ` +
+
+            `<strong>` +
+
+            `${quantidade}` +
+
             ` candles recebidos</strong>.`;
 
 
-        diagnostic.innerHTML =
-            `Status HTTP da Brapi: <strong>` +
-            `${data.status_historico}` +
-            `</strong>`;
+
+        atualizarDiagnostico(
+            data
+        );
 
 
-        diagnostic.innerHTML +=
-            `<br><br>` +
-            `<strong>Campos recebidos em results[0]:</strong>` +
-            `<br>` +
-            `${formatarDiagnostico(
-                data.campos_historico
-            )}`;
+
+        /*
+         * O gráfico é tratado isoladamente.
+         * Se houver qualquer problema nele,
+         * a cotação permanece na tela.
+         */
 
 
-        diagnostic.innerHTML +=
-            `<br><br>` +
-            `<strong>Quantidade em historicalDataPrice:</strong>` +
-            `<br>` +
-            `${formatarDiagnostico(
-                data.quantidade_historico_brapi
-            )}`;
+        try {
+
+            criarGraficoM5(
+                data.historico
+            );
+
+        }
+
+        catch (
+            erroGrafico
+        ) {
+
+            console.error(
+                "Erro no gráfico:",
+                erroGrafico
+            );
 
 
-        diagnostic.innerHTML +=
-            `<br><br>` +
-            `<strong>Primeiro item de historicalDataPrice:</strong>` +
-            `<br>` +
-            `${formatarDiagnostico(
-                data.primeiro_item_historico
-            )}`;
-
-
-        diagnostic.innerHTML +=
-            `<br><br>` +
-            `<strong>Primeiro timestamp:</strong>` +
-            `<br>` +
-            `${formatarDiagnostico(
-                data.primeiro_timestamp
-            )}`;
-
-
-        diagnostic.innerHTML +=
-            `<br><strong>Último timestamp:</strong>` +
-            `<br>` +
-            `${formatarDiagnostico(
-                data.ultimo_timestamp
-            )}`;
-
-
-        if (data.erro_historico) {
-
-            diagnostic.innerHTML +=
-                `<br><br>` +
-                `<strong>Resposta da Brapi:</strong>` +
-                `<br>` +
-                `${formatarDiagnostico(
-                    data.erro_historico
-                )}`;
+            chartInfo.textContent =
+                "Os dados foram recebidos, " +
+                "mas ocorreu um erro ao montar o gráfico.";
 
         }
 
 
-        criarGraficoM5(
-            data.historico
-        );
-
     }
 
 
-    catch (error) {
+    catch (
+        error
+    ) {
+
+
+        console.error(
+            "Erro ORION:",
+            error
+        );
+
+
 
         result.className =
             "result error";
@@ -1162,6 +1857,7 @@ async function analisarAtivo() {
         result.textContent =
             "Erro na comunicação com o servidor:\n\n" +
             error.message;
+
 
 
         analysisStatus.textContent =
@@ -1176,6 +1872,17 @@ async function analisarAtivo() {
             "● ORION AI — erro de comunicação";
 
 
+
+        /*
+         * Não apagamos os dados de mercado
+         * aqui.
+         *
+         * Isso evita que uma falha posterior
+         * destrua uma cotação que já estava
+         * corretamente carregada.
+         */
+
+
         historyStatus.textContent =
             "Histórico M5: erro na consulta.";
 
@@ -1185,7 +1892,7 @@ async function analisarAtivo() {
 
 
         chartInfo.textContent =
-            "Não foi possível montar o gráfico.";
+            "Não foi possível atualizar o gráfico.";
 
     }
 
@@ -1200,10 +1907,12 @@ async function analisarAtivo() {
 }
 
 
+
 analyzeButton.addEventListener(
     "click",
     analisarAtivo
 );
+
 
 
 assetInput.addEventListener(
@@ -1221,7 +1930,10 @@ assetInput.addEventListener(
     }
 );
 
+
 </script>
 
+
 </body>
+
 </html>
