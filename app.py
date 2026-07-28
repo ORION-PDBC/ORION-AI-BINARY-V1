@@ -59,22 +59,43 @@ def analisar():
         )
 
 
-        # ==================================================
-        # LEITURA DA RESPOSTA DA COTAÇÃO
-        # ==================================================
+        if resposta_cotacao.status_code != 200:
 
-        try:
+            try:
 
-            dados_cotacao = (
-                resposta_cotacao.json()
-            )
+                erro_cotacao = (
+                    resposta_cotacao.json()
+                )
 
-        except ValueError:
+            except ValueError:
 
-            dados_cotacao = {
-                "resposta_texto":
+                erro_cotacao = (
                     resposta_cotacao.text
-            }
+                )
+
+            return jsonify({
+
+                "sucesso": False,
+
+                "ativo": ativo,
+
+                "erro": (
+                    "Não foi possível obter "
+                    "a cotação do ativo."
+                ),
+
+                "status_cotacao":
+                    resposta_cotacao.status_code,
+
+                "resposta_cotacao":
+                    erro_cotacao
+
+            }), 502
+
+
+        dados_cotacao = (
+            resposta_cotacao.json()
+        )
 
 
         resultados_cotacao = (
@@ -82,35 +103,35 @@ def analisar():
                 "results",
                 []
             )
-            if isinstance(
-                dados_cotacao,
-                dict
-            )
-            else []
         )
+
+
+        if not resultados_cotacao:
+
+            return jsonify({
+
+                "sucesso": False,
+
+                "ativo": ativo,
+
+                "erro":
+                    "Ativo não encontrado."
+
+            }), 404
 
 
         cotacao = (
             resultados_cotacao[0]
-            if resultados_cotacao
-            else {}
         )
 
 
         # ==================================================
-        # DIAGNÓSTICO COMPLETO DA COTAÇÃO
+        # DIAGNÓSTICO DA COTAÇÃO
         # ==================================================
 
-        campos_cotacao = []
-
-        if isinstance(
-            cotacao,
-            dict
-        ):
-
-            campos_cotacao = list(
-                cotacao.keys()
-            )
+        campos_cotacao = list(
+            cotacao.keys()
+        )
 
 
         # ==================================================
@@ -123,15 +144,25 @@ def analisar():
 
 
         resposta_historico = requests.get(
+
             url_historico,
+
             headers=headers,
+
             params={
+
                 "symbols": ativo,
+
                 "range": "1d",
+
                 "interval": "5m",
+
                 "sortOrder": "asc"
+
             },
+
             timeout=10
+
         )
 
 
@@ -159,6 +190,7 @@ def analisar():
             dados_historico = (
                 resposta_historico.json()
             )
+
 
             resultados_historico = (
                 dados_historico.get(
@@ -228,6 +260,7 @@ def analisar():
 
                 historico_normalizado = []
 
+
                 for candle in historico_brapi:
 
                     if not isinstance(
@@ -262,6 +295,10 @@ def analisar():
                     )
 
 
+                    # ------------------------------------------
+                    # VALIDAÇÃO MÍNIMA
+                    # ------------------------------------------
+
                     if timestamp is None:
                         continue
 
@@ -277,6 +314,10 @@ def analisar():
                     if fechamento is None:
                         continue
 
+
+                    # ------------------------------------------
+                    # CONVERSÃO NUMÉRICA
+                    # ------------------------------------------
 
                     try:
 
@@ -300,11 +341,13 @@ def analisar():
                             fechamento
                         )
 
+
                         if volume is not None:
 
                             volume = float(
                                 volume
                             )
+
 
                     except (
                         TypeError,
@@ -313,6 +356,10 @@ def analisar():
 
                         continue
 
+
+                    # ------------------------------------------
+                    # CANDLE NORMALIZADO
+                    # ------------------------------------------
 
                     candle_normalizado = {
 
@@ -333,6 +380,7 @@ def analisar():
 
                         "volume":
                             volume
+
                     }
 
 
@@ -341,9 +389,15 @@ def analisar():
                     )
 
 
+                # ==================================================
+                # ORDENAÇÃO CRONOLÓGICA
+                # ==================================================
+
                 historico_normalizado.sort(
+
                     key=lambda candle:
                         candle["date"]
+
                 )
 
 
@@ -377,92 +431,136 @@ def analisar():
 
 
         primeiro_candle = (
+
             historico[0]
             if historico
             else None
+
         )
 
 
         ultimo_candle = (
+
             historico[-1]
             if historico
             else None
+
         )
 
 
         primeiro_timestamp = (
+
             primeiro_candle.get("date")
             if primeiro_candle
             else None
+
         )
 
 
         ultimo_timestamp = (
+
             ultimo_candle.get("date")
             if ultimo_candle
             else None
+
         )
 
 
+        # ==================================================
+        # DADOS DO PRIMEIRO CANDLE
+        # ==================================================
+
         primeiro_open = (
+
             primeiro_candle.get("open")
             if primeiro_candle
             else None
+
         )
 
+
         primeiro_high = (
+
             primeiro_candle.get("high")
             if primeiro_candle
             else None
+
         )
 
+
         primeiro_low = (
+
             primeiro_candle.get("low")
             if primeiro_candle
             else None
+
         )
 
+
         primeiro_close = (
+
             primeiro_candle.get("close")
             if primeiro_candle
             else None
+
         )
 
+
         primeiro_volume = (
+
             primeiro_candle.get("volume")
             if primeiro_candle
             else None
+
         )
 
 
+        # ==================================================
+        # DADOS DO ÚLTIMO CANDLE
+        # ==================================================
+
         ultimo_open = (
+
             ultimo_candle.get("open")
             if ultimo_candle
             else None
+
         )
 
+
         ultimo_high = (
+
             ultimo_candle.get("high")
             if ultimo_candle
             else None
+
         )
 
+
         ultimo_low = (
+
             ultimo_candle.get("low")
             if ultimo_candle
             else None
+
         )
 
+
         ultimo_close = (
+
             ultimo_candle.get("close")
             if ultimo_candle
             else None
+
         )
 
+
         ultimo_volume = (
+
             ultimo_candle.get("volume")
             if ultimo_candle
             else None
+
         )
 
 
@@ -472,6 +570,7 @@ def analisar():
 
         historico_em_ordem = True
 
+
         if len(historico) > 1:
 
             for i in range(
@@ -480,12 +579,18 @@ def analisar():
             ):
 
                 timestamp_anterior = (
+
                     historico[i - 1]["date"]
+
                 )
 
+
                 timestamp_atual = (
+
                     historico[i]["date"]
+
                 )
+
 
                 if timestamp_atual < timestamp_anterior:
 
@@ -502,6 +607,7 @@ def analisar():
             5 * 60
         )
 
+
         quantidade_intervalos_validos = 0
 
         quantidade_intervalos_incorretos = 0
@@ -517,12 +623,18 @@ def analisar():
             ):
 
                 anterior = (
+
                     historico[i - 1]["date"]
+
                 )
 
+
                 atual = (
+
                     historico[i]["date"]
+
                 )
+
 
                 intervalo = (
                     atual - anterior
@@ -553,11 +665,9 @@ def analisar():
 
         return jsonify({
 
-            "sucesso":
-                True,
+            "sucesso": True,
 
-            "ativo":
-                ativo,
+            "ativo": ativo,
 
             "status":
                 "cotacao_recebida",
@@ -567,54 +677,44 @@ def analisar():
             # DIAGNÓSTICO DA COTAÇÃO
             # ==================================================
 
-            "status_cotacao":
-                resposta_cotacao.status_code,
-
             "campos_cotacao":
                 campos_cotacao,
 
-            "resposta_cotacao_completa":
+            "cotacao_bruta":
                 cotacao,
 
 
             # ==================================================
-            # COTAÇÃO NORMALIZADA ATUAL
+            # COTAÇÃO ATUAL
             # ==================================================
 
-            "nome":
-                cotacao.get(
-                    "longName"
-                ),
+            "nome": cotacao.get(
+                "longName"
+            ),
 
-            "preco":
-                cotacao.get(
-                    "regularMarketPrice"
-                ),
+            "preco": cotacao.get(
+                "regularMarketPrice"
+            ),
 
-            "variacao":
-                cotacao.get(
-                    "regularMarketChange"
-                ),
+            "variacao": cotacao.get(
+                "regularMarketChange"
+            ),
 
-            "variacao_percentual":
-                cotacao.get(
-                    "regularMarketChangePercent"
-                ),
+            "variacao_percentual": cotacao.get(
+                "regularMarketChangePercent"
+            ),
 
-            "maxima":
-                cotacao.get(
-                    "regularMarketDayHigh"
-                ),
+            "maxima": cotacao.get(
+                "regularMarketDayHigh"
+            ),
 
-            "minima":
-                cotacao.get(
-                    "regularMarketDayLow"
-                ),
+            "minima": cotacao.get(
+                "regularMarketDayLow"
+            ),
 
-            "volume":
-                cotacao.get(
-                    "regularMarketVolume"
-                ),
+            "volume": cotacao.get(
+                "regularMarketVolume"
+            ),
 
 
             # ==================================================
@@ -720,6 +820,7 @@ def analisar():
 
             "erro_historico":
                 erro_historico
+
         })
 
 
@@ -731,17 +832,14 @@ def analisar():
 
         return jsonify({
 
-            "sucesso":
-                False,
+            "sucesso": False,
 
-            "ativo":
-                ativo,
+            "ativo": ativo,
 
-            "erro":
-                (
-                    f"Erro ao consultar a Brapi: "
-                    f"{str(erro)}"
-                )
+            "erro": (
+                f"Erro ao consultar a Brapi: "
+                f"{str(erro)}"
+            )
 
         }), 502
 
@@ -754,17 +852,14 @@ def analisar():
 
         return jsonify({
 
-            "sucesso":
-                False,
+            "sucesso": False,
 
-            "ativo":
-                ativo,
+            "ativo": ativo,
 
-            "erro":
-                (
-                    f"Erro interno no servidor: "
-                    f"{str(erro)}"
-                )
+            "erro": (
+                f"Erro interno no servidor: "
+                f"{str(erro)}"
+            )
 
         }), 500
 
