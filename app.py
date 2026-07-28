@@ -36,9 +36,7 @@ def analisar():
         headers = {}
 
         if token:
-            headers["Authorization"] = (
-                f"Bearer {token}"
-            )
+            headers["Authorization"] = f"Bearer {token}"
 
 
         # ==================================================
@@ -55,124 +53,84 @@ def analisar():
             params={
                 "symbols": ativo
             },
-            timeout=10
+            timeout=15
         )
 
-
-        if resposta_cotacao.status_code != 200:
-
-            try:
-
-                erro_cotacao = (
-                    resposta_cotacao.json()
-                )
-
-            except ValueError:
-
-                erro_cotacao = (
-                    resposta_cotacao.text
-                )
-
-            return jsonify({
-
-                "sucesso": False,
-
-                "ativo": ativo,
-
-                "erro": (
-                    "Não foi possível obter "
-                    "a cotação do ativo."
-                ),
-
-                "status_cotacao":
-                    resposta_cotacao.status_code,
-
-                "resposta_cotacao":
-                    erro_cotacao
-
-            }), 502
-
-
-        dados_cotacao = (
-            resposta_cotacao.json()
+        status_cotacao = (
+            resposta_cotacao.status_code
         )
 
-
-        resultados_cotacao = (
-            dados_cotacao.get(
-                "results",
-                []
+        try:
+            dados_cotacao = (
+                resposta_cotacao.json()
             )
-        )
-
-
-        if not resultados_cotacao:
-
-            return jsonify({
-
-                "sucesso": False,
-
-                "ativo": ativo,
-
-                "erro":
-                    "Ativo não encontrado."
-
-            }), 404
-
-
-        cotacao = (
-            resultados_cotacao[0]
-        )
+        except ValueError:
+            dados_cotacao = {}
 
 
         # ==================================================
         # DIAGNÓSTICO DA COTAÇÃO
         # ==================================================
 
-        campos_cotacao = list(
-            cotacao.keys()
+        resultados_cotacao = (
+            dados_cotacao.get(
+                "results",
+                []
+            )
+            if isinstance(
+                dados_cotacao,
+                dict
+            )
+            else []
         )
 
 
+        cotacao = {}
+
+        if (
+            isinstance(
+                resultados_cotacao,
+                list
+            )
+            and len(resultados_cotacao) > 0
+            and isinstance(
+                resultados_cotacao[0],
+                dict
+            )
+        ):
+
+            cotacao = (
+                resultados_cotacao[0]
+            )
+
+
         # ==================================================
-        # HISTÓRICO M5 — API V2
+        # HISTÓRICO M5
         # ==================================================
 
         url_historico = (
             "https://brapi.dev/api/v2/stocks/historical"
         )
 
-
         resposta_historico = requests.get(
-
             url_historico,
-
             headers=headers,
-
             params={
-
                 "symbols": ativo,
-
                 "range": "1d",
-
                 "interval": "5m",
-
                 "sortOrder": "asc"
-
             },
-
-            timeout=10
-
+            timeout=15
         )
-
-
-        historico = []
 
         status_historico = (
             resposta_historico.status_code
         )
 
         erro_historico = None
+
+        historico = []
 
         campos_historico = []
 
@@ -181,244 +139,183 @@ def analisar():
         primeiro_item_historico = None
 
 
-        # ==================================================
-        # LEITURA DO HISTÓRICO
-        # ==================================================
-
-        if resposta_historico.status_code == 200:
+        try:
 
             dados_historico = (
                 resposta_historico.json()
             )
 
+        except ValueError:
 
-            resultados_historico = (
-                dados_historico.get(
-                    "results",
-                    []
+            dados_historico = {}
+
+
+        resultados_historico = (
+            dados_historico.get(
+                "results",
+                []
+            )
+            if isinstance(
+                dados_historico,
+                dict
+            )
+            else []
+        )
+
+
+        if (
+            isinstance(
+                resultados_historico,
+                list
+            )
+            and len(resultados_historico) > 0
+            and isinstance(
+                resultados_historico[0],
+                dict
+            )
+        ):
+
+            resultado_historico = (
+                resultados_historico[0]
+            )
+
+            campos_historico = list(
+                resultado_historico.keys()
+            )
+
+            dados_series = (
+                resultado_historico.get(
+                    "data",
+                    {}
                 )
             )
 
+            if isinstance(
+                dados_series,
+                dict
+            ):
 
-            if resultados_historico:
-
-                resultado_historico = (
-                    resultados_historico[0]
-                )
-
-
-                campos_historico = list(
-                    resultado_historico.keys()
-                )
-
-
-                dados_series = (
-                    resultado_historico.get(
-                        "data",
-                        {}
+                historico_brapi = (
+                    dados_series.get(
+                        "historicalDataPrice",
+                        []
                     )
                 )
 
+            else:
 
-                if isinstance(
-                    dados_series,
+                historico_brapi = []
+
+
+            if not isinstance(
+                historico_brapi,
+                list
+            ):
+
+                historico_brapi = []
+
+
+            quantidade_historico_brapi = (
+                len(historico_brapi)
+            )
+
+
+            if quantidade_historico_brapi > 0:
+
+                primeiro_item_historico = (
+                    historico_brapi[0]
+                )
+
+
+            # ==================================================
+            # NORMALIZAÇÃO DOS CANDLES
+            # ==================================================
+
+            for candle in historico_brapi:
+
+                if not isinstance(
+                    candle,
                     dict
                 ):
+                    continue
 
-                    historico_brapi = (
-                        dados_series.get(
-                            "historicalDataPrice",
-                            []
-                        )
+                try:
+
+                    timestamp = int(
+                        candle.get("date")
                     )
 
-                else:
-
-                    historico_brapi = []
-
-
-                if historico_brapi is None:
-
-                    historico_brapi = []
-
-
-                quantidade_historico_brapi = len(
-                    historico_brapi
-                )
-
-
-                if quantidade_historico_brapi > 0:
-
-                    primeiro_item_historico = (
-                        historico_brapi[0]
+                    abertura = float(
+                        candle.get("open")
                     )
 
-
-                # ==================================================
-                # NORMALIZAÇÃO DO HISTÓRICO M5
-                # ==================================================
-
-                historico_normalizado = []
-
-
-                for candle in historico_brapi:
-
-                    if not isinstance(
-                        candle,
-                        dict
-                    ):
-                        continue
-
-
-                    timestamp = candle.get(
-                        "date"
+                    maxima = float(
+                        candle.get("high")
                     )
 
-                    abertura = candle.get(
-                        "open"
+                    minima = float(
+                        candle.get("low")
                     )
 
-                    maxima = candle.get(
-                        "high"
-                    )
-
-                    minima = candle.get(
-                        "low"
-                    )
-
-                    fechamento = candle.get(
-                        "close"
+                    fechamento = float(
+                        candle.get("close")
                     )
 
                     volume = candle.get(
                         "volume"
                     )
 
+                    if volume is not None:
+                        volume = float(volume)
 
-                    # ------------------------------------------
-                    # VALIDAÇÃO MÍNIMA
-                    # ------------------------------------------
+                except (
+                    TypeError,
+                    ValueError
+                ):
 
-                    if timestamp is None:
-                        continue
-
-                    if abertura is None:
-                        continue
-
-                    if maxima is None:
-                        continue
-
-                    if minima is None:
-                        continue
-
-                    if fechamento is None:
-                        continue
+                    continue
 
 
-                    # ------------------------------------------
-                    # CONVERSÃO NUMÉRICA
-                    # ------------------------------------------
+                historico.append({
 
-                    try:
+                    "date":
+                        timestamp,
 
-                        timestamp = int(
-                            timestamp
-                        )
+                    "open":
+                        abertura,
 
-                        abertura = float(
-                            abertura
-                        )
+                    "high":
+                        maxima,
 
-                        maxima = float(
-                            maxima
-                        )
+                    "low":
+                        minima,
 
-                        minima = float(
-                            minima
-                        )
+                    "close":
+                        fechamento,
 
-                        fechamento = float(
-                            fechamento
-                        )
+                    "volume":
+                        volume
 
-
-                        if volume is not None:
-
-                            volume = float(
-                                volume
-                            )
-
-
-                    except (
-                        TypeError,
-                        ValueError
-                    ):
-
-                        continue
-
-
-                    # ------------------------------------------
-                    # CANDLE NORMALIZADO
-                    # ------------------------------------------
-
-                    candle_normalizado = {
-
-                        "date":
-                            timestamp,
-
-                        "open":
-                            abertura,
-
-                        "high":
-                            maxima,
-
-                        "low":
-                            minima,
-
-                        "close":
-                            fechamento,
-
-                        "volume":
-                            volume
-
-                    }
-
-
-                    historico_normalizado.append(
-                        candle_normalizado
-                    )
-
-
-                # ==================================================
-                # ORDENAÇÃO CRONOLÓGICA
-                # ==================================================
-
-                historico_normalizado.sort(
-
-                    key=lambda candle:
-                        candle["date"]
-
-                )
-
-
-                historico = (
-                    historico_normalizado
-                )
+                })
 
 
         else:
 
-            try:
+            if status_historico != 200:
 
                 erro_historico = (
-                    resposta_historico.json()
+                    dados_historico
                 )
 
-            except ValueError:
 
-                erro_historico = (
-                    resposta_historico.text
-                )
+        # ==================================================
+        # ORDENAÇÃO
+        # ==================================================
+
+        historico.sort(
+            key=lambda candle:
+                candle["date"]
+        )
 
 
         # ==================================================
@@ -431,236 +328,35 @@ def analisar():
 
 
         primeiro_candle = (
-
             historico[0]
             if historico
             else None
-
         )
 
 
         ultimo_candle = (
-
             historico[-1]
             if historico
             else None
-
         )
 
 
         primeiro_timestamp = (
-
             primeiro_candle.get("date")
             if primeiro_candle
             else None
-
         )
 
 
         ultimo_timestamp = (
-
             ultimo_candle.get("date")
             if ultimo_candle
             else None
-
         )
 
 
         # ==================================================
-        # DADOS DO PRIMEIRO CANDLE
-        # ==================================================
-
-        primeiro_open = (
-
-            primeiro_candle.get("open")
-            if primeiro_candle
-            else None
-
-        )
-
-
-        primeiro_high = (
-
-            primeiro_candle.get("high")
-            if primeiro_candle
-            else None
-
-        )
-
-
-        primeiro_low = (
-
-            primeiro_candle.get("low")
-            if primeiro_candle
-            else None
-
-        )
-
-
-        primeiro_close = (
-
-            primeiro_candle.get("close")
-            if primeiro_candle
-            else None
-
-        )
-
-
-        primeiro_volume = (
-
-            primeiro_candle.get("volume")
-            if primeiro_candle
-            else None
-
-        )
-
-
-        # ==================================================
-        # DADOS DO ÚLTIMO CANDLE
-        # ==================================================
-
-        ultimo_open = (
-
-            ultimo_candle.get("open")
-            if ultimo_candle
-            else None
-
-        )
-
-
-        ultimo_high = (
-
-            ultimo_candle.get("high")
-            if ultimo_candle
-            else None
-
-        )
-
-
-        ultimo_low = (
-
-            ultimo_candle.get("low")
-            if ultimo_candle
-            else None
-
-        )
-
-
-        ultimo_close = (
-
-            ultimo_candle.get("close")
-            if ultimo_candle
-            else None
-
-        )
-
-
-        ultimo_volume = (
-
-            ultimo_candle.get("volume")
-            if ultimo_candle
-            else None
-
-        )
-
-
-        # ==================================================
-        # VALIDAÇÃO DA ORDEM CRONOLÓGICA
-        # ==================================================
-
-        historico_em_ordem = True
-
-
-        if len(historico) > 1:
-
-            for i in range(
-                1,
-                len(historico)
-            ):
-
-                timestamp_anterior = (
-
-                    historico[i - 1]["date"]
-
-                )
-
-
-                timestamp_atual = (
-
-                    historico[i]["date"]
-
-                )
-
-
-                if timestamp_atual < timestamp_anterior:
-
-                    historico_em_ordem = False
-
-                    break
-
-
-        # ==================================================
-        # INTERVALOS ENTRE CANDLES
-        # ==================================================
-
-        intervalo_esperado_segundos = (
-            5 * 60
-        )
-
-
-        quantidade_intervalos_validos = 0
-
-        quantidade_intervalos_incorretos = 0
-
-        maior_intervalo_segundos = 0
-
-
-        if len(historico) > 1:
-
-            for i in range(
-                1,
-                len(historico)
-            ):
-
-                anterior = (
-
-                    historico[i - 1]["date"]
-
-                )
-
-
-                atual = (
-
-                    historico[i]["date"]
-
-                )
-
-
-                intervalo = (
-                    atual - anterior
-                )
-
-
-                if intervalo == (
-                    intervalo_esperado_segundos
-                ):
-
-                    quantidade_intervalos_validos += 1
-
-                else:
-
-                    quantidade_intervalos_incorretos += 1
-
-
-                if intervalo > maior_intervalo_segundos:
-
-                    maior_intervalo_segundos = (
-                        intervalo
-                    )
-
-
-        # ==================================================
-        # RESPOSTA AO ORION
+        # RETORNO
         # ==================================================
 
         return jsonify({
@@ -669,57 +365,47 @@ def analisar():
 
             "ativo": ativo,
 
-            "status":
-                "cotacao_recebida",
+            "status": "cotacao_recebida",
 
+            # ==============================================
+            # COTAÇÃO
+            # ==============================================
 
-            # ==================================================
-            # DIAGNÓSTICO DA COTAÇÃO
-            # ==================================================
+            "nome":
+                cotacao.get("longName")
+                or cotacao.get("shortName")
+                or cotacao.get("name"),
 
-            "campos_cotacao":
-                campos_cotacao,
+            "preco":
+                cotacao.get("regularMarketPrice")
+                or cotacao.get("price")
+                or cotacao.get("regularMarketPreviousClose"),
 
-            "cotacao_bruta":
-                cotacao,
+            "variacao":
+                cotacao.get("regularMarketChange")
+                or cotacao.get("change"),
 
+            "variacao_percentual":
+                cotacao.get("regularMarketChangePercent")
+                or cotacao.get("changePercent"),
 
-            # ==================================================
-            # COTAÇÃO ATUAL
-            # ==================================================
+            "maxima":
+                cotacao.get("regularMarketDayHigh")
+                or cotacao.get("dayHigh")
+                or cotacao.get("high"),
 
-            "nome": cotacao.get(
-                "longName"
-            ),
+            "minima":
+                cotacao.get("regularMarketDayLow")
+                or cotacao.get("dayLow")
+                or cotacao.get("low"),
 
-            "preco": cotacao.get(
-                "regularMarketPrice"
-            ),
+            "volume":
+                cotacao.get("regularMarketVolume")
+                or cotacao.get("volume"),
 
-            "variacao": cotacao.get(
-                "regularMarketChange"
-            ),
-
-            "variacao_percentual": cotacao.get(
-                "regularMarketChangePercent"
-            ),
-
-            "maxima": cotacao.get(
-                "regularMarketDayHigh"
-            ),
-
-            "minima": cotacao.get(
-                "regularMarketDayLow"
-            ),
-
-            "volume": cotacao.get(
-                "regularMarketVolume"
-            ),
-
-
-            # ==================================================
+            # ==============================================
             # HISTÓRICO
-            # ==================================================
+            # ==============================================
 
             "timeframe":
                 "5m",
@@ -730,6 +416,15 @@ def analisar():
             "quantidade_candles":
                 quantidade_candles,
 
+            "status_cotacao":
+                status_cotacao,
+
+            "campos_cotacao":
+                list(cotacao.keys()),
+
+            "resposta_cotacao":
+                dados_cotacao,
+
             "campos_historico":
                 campos_historico,
 
@@ -739,81 +434,11 @@ def analisar():
             "primeiro_item_historico":
                 primeiro_item_historico,
 
-
-            # ==================================================
-            # TIMESTAMPS
-            # ==================================================
-
             "primeiro_timestamp":
                 primeiro_timestamp,
 
             "ultimo_timestamp":
                 ultimo_timestamp,
-
-
-            # ==================================================
-            # PRIMEIRO CANDLE
-            # ==================================================
-
-            "primeiro_open":
-                primeiro_open,
-
-            "primeiro_high":
-                primeiro_high,
-
-            "primeiro_low":
-                primeiro_low,
-
-            "primeiro_close":
-                primeiro_close,
-
-            "primeiro_volume":
-                primeiro_volume,
-
-
-            # ==================================================
-            # ÚLTIMO CANDLE
-            # ==================================================
-
-            "ultimo_open":
-                ultimo_open,
-
-            "ultimo_high":
-                ultimo_high,
-
-            "ultimo_low":
-                ultimo_low,
-
-            "ultimo_close":
-                ultimo_close,
-
-            "ultimo_volume":
-                ultimo_volume,
-
-
-            # ==================================================
-            # VALIDAÇÕES
-            # ==================================================
-
-            "historico_em_ordem":
-                historico_em_ordem,
-
-            "intervalo_esperado_segundos":
-                intervalo_esperado_segundos,
-
-            "quantidade_intervalos_validos":
-                quantidade_intervalos_validos,
-
-            "quantidade_intervalos_incorretos":
-                quantidade_intervalos_incorretos,
-
-            "maior_intervalo_segundos":
-                maior_intervalo_segundos,
-
-
-            # ==================================================
-            # STATUS DA BRAPI
-            # ==================================================
 
             "status_historico":
                 status_historico,
@@ -836,10 +461,8 @@ def analisar():
 
             "ativo": ativo,
 
-            "erro": (
-                f"Erro ao consultar a Brapi: "
-                f"{str(erro)}"
-            )
+            "erro":
+                f"Erro ao consultar a Brapi: {str(erro)}"
 
         }), 502
 
@@ -856,10 +479,8 @@ def analisar():
 
             "ativo": ativo,
 
-            "erro": (
-                f"Erro interno no servidor: "
-                f"{str(erro)}"
-            )
+            "erro":
+                f"Erro interno no servidor: {str(erro)}"
 
         }), 500
 
