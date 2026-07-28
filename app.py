@@ -101,8 +101,7 @@ def analisar():
 
         cotacao = resultados_cotacao[0]
 
-        print("DEBUG COTACAO BRAPI:")
-        print(cotacao)
+        dados_mercado = cotacao.get("data", {})
 
 
         # ==================================================
@@ -537,32 +536,32 @@ def analisar():
             # COTAÇÃO ATUAL
             # ------------------------------------------
 
-            "nome": cotacao.get(
-                "longName"
+            "nome": dados_mercado.get(
+            "longName"
             ),
 
-            "preco": cotacao.get(
-                "regularMarketPrice"
+            "preco": dados_mercado.get(
+            "regularMarketPrice"
             ),
 
-            "variacao": cotacao.get(
-                "regularMarketChange"
+            "variacao": dados_mercado.get(
+            "regularMarketChange"
             ),
 
-            "variacao_percentual": cotacao.get(
-                "regularMarketChangePercent"
+            "variacao_percentual": dados_mercado.get(
+            "regularMarketChangePercent"
             ),
 
-            "maxima": cotacao.get(
-                "regularMarketDayHigh"
+            "maxima": dados_mercado.get(
+            "regularMarketDayHigh"
             ),
 
-            "minima": cotacao.get(
-                "regularMarketDayLow"
+            "minima": dados_mercado.get(
+            "regularMarketDayLow"
             ),
 
-            "volume": cotacao.get(
-                "regularMarketVolume"
+            "volume": dados_mercado.get(
+            "regularMarketVolume"
             ),
 
 
