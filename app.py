@@ -103,15 +103,6 @@ def analisar():
             resultados_cotacao[0]
         )
 
-        print("==========================================")
-        print("DEBUG COTAÇÃO BRAPI")
-        print("==========================================")
-        print("JSON COMPLETO DA COTAÇÃO:")
-        print(dados_cotacao)
-        print("==========================================")
-        print("RESULTADOS[0]:")
-        print(cotacao)
-        print("==========================================")
 
 
         # ==================================================
