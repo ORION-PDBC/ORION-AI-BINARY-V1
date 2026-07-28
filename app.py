@@ -101,6 +101,9 @@ def analisar():
 
         cotacao = resultados_cotacao[0]
 
+        print("DEBUG COTACAO BRAPI:")
+        print(cotacao)
+
 
         # ==================================================
         # HISTÓRICO M5 — API V2
